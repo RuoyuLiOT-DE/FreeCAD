@@ -168,5 +168,12 @@ SET_PYTHON_PREFIX_SUFFIX(RobotGui)
 
 fc_copy_sources(RobotGui "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/Mod/Robot" ${RobotGuiIcon_SVG})
 
-INSTALL(TARGETS RobotGui DESTINATION ${CMAKE_INSTALL_LIBDIR})
+INSTALL(TARGETS RobotGui DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT robot-workbench)
 INSTALL(FILES ${RobotGuiIcon_SVG} DESTINATION "${CMAKE_INSTALL_DATADIR}/Mod/Robot/Resources/icons")
+
+add_custom_target(robot-workbench-install
+	DEPENDS RobotGui
+	COMMAND
+		"${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=robot-workbench -DBUILD_TYPE=Debug
+		-P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+)

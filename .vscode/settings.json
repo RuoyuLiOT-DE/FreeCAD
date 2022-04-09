@@ -1,0 +1,5 @@
+{
+    "cmake.cmakePath": "C:\\Program Files\\CMake\\bin\\cmake.exe",
+    "cmake.allowCommentsInPresetsFile": true,
+    "cmake.useCMakePresets": "always"
+}

@@ -76,6 +76,7 @@ void CmdRobotCreateTrajectory::activated(int)
     doCommand(Doc,"App.activeDocument().addObject(\"Robot::TrajectoryObject\",\"%s\")",FeatName.c_str());
     updateActive();
     commitCommand();
+    Base::Console().Message("Hello Trajectory\n");
 
 }
 

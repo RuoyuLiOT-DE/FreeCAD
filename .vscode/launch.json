@@ -1,0 +1,51 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "rws-msvc-cmake-debug",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "C:\\Dev\\Framework\\Robwork\\RobWorkStudio\\bin\\relwithdebinfo\\RobWorkStudio.exe",
+            "stopAtEntry": false,
+            "cwd": "C:\\Dev\\Framework\\Robwork\\RobworkStudio\\bin\\relwithdebinfo",
+            "environment": [
+                {
+                    "name": "Path",
+                    "value": "${env:PATH};C:\\Dev\\Framework\\RobWork\\RobWork\\bin\\RelWithDebInfo;C:\\Dev\\Framework\\RobWork\\RobWorkStudio\\bin\\relwithdebinfo;C:\\Dev\\Libs\\xerces-c-3.2.3\\xerces-install\\bin;C:\\Dev\\Libs\\boost_1_67_0\\lib64-msvc-14.1;"
+                }
+            ],
+            "console": "internalConsole",
+            "preLaunchTask": "msvc-cmake-build"
+        },
+        {
+            "name": "home-robot-debug",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "D:\\Dev\\FreeCAD\\out\\install\\config_msvc2019_x64_debug\\bin\\FreeCAD_d.exe",
+            "stopAtEntry": false,
+            "cwd": "D:\\Dev\\FreeCAD\\out\\install\\config_msvc2019_x64_debug\\bin\\",
+            "console": "internalConsole",
+            "preLaunchTask": "msvc-cmake-build"
+        },
+        {
+            "name": "RioD-msvc-cmake-debug",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "C:\\Dev\\Install\\RioD019\\bin\\RioD.exe",
+            "stopAtEntry": false,
+            // "cwd": "C:\\Dev\\Framework\\Robwork\\RobworkStudio\\bin\\relwithdebinfo",
+            "cwd": "C:\\Dev\\Install\\RioD019\\bin\\",
+            "environment": [
+                {
+                    "name": "Path",
+                    "value": "${env:PATH};C:\\Dev\\Install\\RioD019\\bin\\isolated_dlls"
+                }
+            ],
+            "console": "internalConsole",
+            "preLaunchTask": "msvc-cmake-build"
+        }
+    ]
+}

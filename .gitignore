@@ -38,7 +38,7 @@ OpenSCAD_rc.py
 /\.idea/
 .tags
 tags
-/\.vscode/
-
+# /\.vscode/
+/out/
 # crowdin file
 src/Tools/freecad.zip

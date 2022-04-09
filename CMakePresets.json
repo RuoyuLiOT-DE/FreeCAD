@@ -1,0 +1,52 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "config_msvc2019_x64_debug",
+            "displayName": "config_msvc2019_x64_debug",
+            "description": "Using compilers for Visual Studio 16 2019 (x64 architecture)",
+            "generator": "Visual Studio 16 2019",
+            "toolset": "host=x64",
+            "architecture": "x64",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_CXX_FLAGS": "/MP /EHsc /DWIN32 ",
+                "FREECAD_LIBPACK_DIR": "D:\\Dev\\Libs\\FreeCADLibs_12.5.1_x64_VC17",
+                "FREECAD_USE_MP_COMPILE_FLAG": true,
+                "DOXYGEN_EXECUTABLE": "D:\\doxygen\\bin\\doxygen.exe",
+                "BUILD_FEM": false,
+                "BUILD_FEM_NETGEN": false,
+                "BUILD_IDF": false,
+                "BUILD_IMAGE": false,
+                "BUILD_INSPECTION": false,
+                "BUILD_MATERIAL": false,
+                "BUILD_OPENSCAD": false,
+                "BUILD_POINTS": false,
+                "BUILD_RAYTRACING": false,
+                "BUILD_REVERSEENGINEERING": false,
+                "BUILD_SPREADSHEET": false,
+                "BUILD_SURFACE": false,
+                "BUILD_TECHDRAW": false,
+                "BUILD_TUX": false,
+                "BUILD_PATH": false
+            },
+            "warnings": {
+                "dev": true
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build_msvc2019_x64_debug",
+            "description": "",
+            "displayName": "build_msvc2019_x64_debug",
+            "configurePreset": "config_msvc2019_x64_debug",
+            "configuration": "Debug",
+            "verbose": true,
+            "nativeToolOptions": ["/m"]
+        }
+
+    ]
+}
