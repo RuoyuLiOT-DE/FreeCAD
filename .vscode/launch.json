@@ -5,28 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "rws-msvc-cmake-debug",
+            "name": "work-robot-debug",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "C:\\Dev\\Framework\\Robwork\\RobWorkStudio\\bin\\relwithdebinfo\\RobWorkStudio.exe",
+            "program": "C:\\Dev\\Framework\\FreeCAD-dev\\out\\install\\config_msvc2019_x64_debug\\bin\\FreeCAD_d.exe",
             "stopAtEntry": false,
-            "cwd": "C:\\Dev\\Framework\\Robwork\\RobworkStudio\\bin\\relwithdebinfo",
-            "environment": [
-                {
-                    "name": "Path",
-                    "value": "${env:PATH};C:\\Dev\\Framework\\RobWork\\RobWork\\bin\\RelWithDebInfo;C:\\Dev\\Framework\\RobWork\\RobWorkStudio\\bin\\relwithdebinfo;C:\\Dev\\Libs\\xerces-c-3.2.3\\xerces-install\\bin;C:\\Dev\\Libs\\boost_1_67_0\\lib64-msvc-14.1;"
-                }
-            ],
-            "console": "internalConsole",
-            "preLaunchTask": "msvc-cmake-build"
-        },
-        {
-            "name": "home-robot-debug",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "D:\\Dev\\FreeCAD\\out\\install\\config_msvc2019_x64_debug\\bin\\FreeCAD_d.exe",
-            "stopAtEntry": false,
-            "cwd": "D:\\Dev\\FreeCAD\\out\\install\\config_msvc2019_x64_debug\\bin\\",
+            "cwd": "C:\\Dev\\Framework\\FreeCAD-dev\\out\\install\\config_msvc2019_x64_debug\\bin\\",
             "console": "internalConsole",
             "preLaunchTask": "msvc-cmake-build"
         },

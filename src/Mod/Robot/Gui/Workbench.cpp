@@ -188,6 +188,8 @@ Gui::ToolBarItem* Workbench::setupToolBars() const
     *part << "Separator";
     *part << "Robot_Simulate";
     *part << "Robot_ImportAttachable";
+    *part << "Robot_CreateCoordSys";
+    *part << "Robot_EditAttachment";
     return root;
 }
 

@@ -73,8 +73,6 @@ SET(Robot_SRCS
     Simulation.h
     Waypoint.cpp
     Waypoint.h
-    RobCoordSystem.h
-    RobCoordSystem.cpp 
     ${Mod_SRCS}
     ${Python_SRCS}
 )

@@ -42,7 +42,8 @@
 #include "TrajectorySimulate.h"
 #include "TaskDlgSimulate.h"
 
-#include <Mod/Robot/App/AttachablePartObject.h>
+#include <Mod/Robot/App/AttachablePartObject.h> // To use ot-attachable object
+// #include <Mod/PartDesign/App/DatumCS.h> // To use the coordinate system defined in partdesgin module ?
 
 using namespace std;
 using namespace RobotGui;
@@ -265,7 +266,7 @@ bool CmdRobotSimulate::isActive(void)
     return (hasActiveDocument() && !Gui::Control().activeDialog());
 }
 
-
+// FIXME: Importing an attachable object into workcell
 // #####################################################################################################
 DEF_STD_CMD_A(CmdRobotImportAttachable)
 
@@ -286,24 +287,33 @@ void CmdRobotImportAttachable::activated(int)
 {
     Robot::AttachablePartObject* pAttachable = 0;
     std::string FeatName = getUniqueObjectName("Attachable");
-    
-    // Robot::AttachablePartObject attach = Robot::AttachablePartObject::AttachablePartObject();
-    // doCommand(Doc,"App.ActiveDocument.addObject(\"Robot::AttachablePartObject\",\"%s\")",FeatName.c_str());
-    Base::BaseClass* base = static_cast<Base::BaseClass*>(Base::Type::createInstanceByName("Robot::AttachablePartObject",true));
-    // Base::BaseClass* Cbase = static_cast<Base::BaseClass*>(Base::Type::createInstanceByName("Robot::RobCoordSystem",true)); 
-    // std::string FeatName = getUniqueObjectName("Robot");
-    // std::string RobotPath = "Mod/Robot/Lib/Kuka/kr500_1.wrl";
-    // std::string KinematicPath = "Mod/Robot/Lib/Kuka/kr500_1.csv";
 
-    // openCommand("Place robot");
-    // doCommand(Doc,"App.activeDocument().addObject(\"Robot::RobotObject\",\"%s\")",FeatName.c_str());
-    // doCommand(Doc,"App.activeDocument().%s.RobotVrmlFile = App.getResourceDir()+\"%s\"",FeatName.c_str(),RobotPath.c_str());
-    // doCommand(Doc,"App.activeDocument().%s.RobotKinematicFile = App.getResourceDir()+\"%s\"",FeatName.c_str(),KinematicPath.c_str());
-    // doCommand(Doc,"App.activeDocument().%s.Axis2 = -90",FeatName.c_str());
-    // doCommand(Doc,"App.activeDocument().%s.Axis3 = 90",FeatName.c_str());
-    // doCommand(Doc,"App.activeDocument().%s.Axis5 = 45",FeatName.c_str());
-    // updateActive();
-    // commitCommand();
+    // FIXME: Temperary solution, for getting the shapes, importing a solid first
+    Gui::CommandManager &mgr = Gui::Application::Instance->commandManager();
+	mgr.runCommandByName("Std_Import");
+	App::DocumentObject* pPartDocumentObject = App::GetApplication().getActiveDocument()->getActiveObject();
+
+	if(!pPartDocumentObject)
+	{
+		Base::Console().Message("Using invalid DocumentObject");
+		return;
+	}
+
+    doCommand(Doc, "App.activeDocument().addObject(\"Robot::AttachablePartObject\",\"%s\")",FeatName.c_str());
+    updateActive(); //FIXME: When do we need to upadte the change manually?
+
+    // TODO: Correct way of checking whether an object is imported successfully?
+    App::DocumentObject* pDocumentObject = App::GetApplication().getActiveDocument()->getActiveObject();
+	if(!pDocumentObject)
+	{
+		Base::Console().Message("Using invalid DocumentObject");
+		return;
+	}
+    // TODO: What is the idea behind this down casting besides checking the type?
+    pAttachable = static_cast<Robot::AttachablePartObject*>(pDocumentObject);
+    if(pAttachable)
+        pAttachable->Shape.setValue(Part::Feature::getTopoShape(pPartDocumentObject));
+    return;
 
 }
 
@@ -314,7 +324,61 @@ bool CmdRobotImportAttachable::isActive(void)
 
 // #####################################################################################################
 
+DEF_STD_CMD_A(CmdCreateCoordSys);
 
+CmdCreateCoordSys::CmdCreateCoordSys()
+	:Command("Robot_CreateCoordSys")
+{
+	sAppModule = "Robot";
+	sGroup = QT_TR_NOOP("Robot");
+	sMenuText = QT_TR_NOOP("+Coordinater System");
+	sToolTipText = QT_TR_NOOP("Add a Coordinater System ");
+	sWhatsThis = "Robot_CreateCoordSys";
+	sStatusTip = sToolTipText;
+	sPixmap = "Robot_CreateCoordSys";
+}
+
+//FIXME: 
+void CmdCreateCoordSys::activated(int)
+{
+    // PartDesign::CoordinateSystem* pCordSys = 0;
+    std::string ObjName = getUniqueObjectName("Frame"); // If this is not the first object with this name it got a number 00x append at the end of this name
+    doCommand(Doc, "App.activeDocument().addObject(\"PartDesign::CoordinateSystem\",\"%s\")",ObjName.c_str());
+}
+
+bool CmdCreateCoordSys::isActive(void)
+{
+	return (hasActiveDocument()); //FIXME: WHY? && !Gui::Control().activeDialog());
+}
+
+// #####################################################################################################
+
+DEF_STD_CMD_A(CmdEditAttachment);
+
+CmdEditAttachment::CmdEditAttachment()
+	:Command("Robot_EditAttachment")
+{
+	sAppModule = "Robot";
+	sGroup = QT_TR_NOOP("Robot");
+	sMenuText = QT_TR_NOOP("+Coordinater System");
+	sToolTipText = QT_TR_NOOP("Add a Coordinater System ");
+	sWhatsThis = "Robot_EditAttachment";
+	sStatusTip = sToolTipText;
+	sPixmap = "Robot_EditAttachment";
+}
+
+//FIXME: 
+void CmdEditAttachment::activated(int)
+{
+    
+}
+
+bool CmdEditAttachment::isActive(void)
+{
+	return (hasActiveDocument()); //FIXME: WHY? && !Gui::Control().activeDialog());
+}
+
+// #####################################################################################################
 
 void CreateRobotCommands(void)
 {
@@ -325,4 +389,6 @@ void CreateRobotCommands(void)
     rcCmdMgr.addCommand(new CmdRobotConstraintAxle());
     rcCmdMgr.addCommand(new CmdRobotSimulate());
     rcCmdMgr.addCommand(new CmdRobotImportAttachable());
+    rcCmdMgr.addCommand(new CmdCreateCoordSys());
+    rcCmdMgr.addCommand(new CmdEditAttachment());
  }

@@ -3,8 +3,8 @@
     "cmake.allowCommentsInPresetsFile": true,
     "cmake.useCMakePresets": "always",
     "output.smartScroll.enabled": true,
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "files.associations": {
-        "*.ipp": "cpp",
-        "xstring": "cpp"
+        "memory": "cpp"
     }
 }
