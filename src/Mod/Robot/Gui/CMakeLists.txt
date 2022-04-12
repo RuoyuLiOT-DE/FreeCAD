@@ -96,6 +96,8 @@ SET(RobotGui_SRCS_ViewProvider
     ViewProviderTrajectoryCompound.h
     ViewProviderTrajectoryDressUp.cpp
     ViewProviderTrajectoryDressUp.h
+    ViewProviderCoordSystem.h
+    ViewProviderCoordSystem.cpp
 )
 SOURCE_GROUP("ViewProvider" FILES ${RobotGui_SRCS_ViewProvider})
 
@@ -171,7 +173,7 @@ fc_copy_sources(RobotGui "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_DATADIR}/Mod/Robot
 INSTALL(TARGETS RobotGui DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT robot-workbench)
 INSTALL(FILES ${RobotGuiIcon_SVG} DESTINATION "${CMAKE_INSTALL_DATADIR}/Mod/Robot/Resources/icons")
 
-add_custom_target(robot-workbench-install
+add_custom_target(robot-debug-install
 	DEPENDS RobotGui
 	COMMAND
 		"${CMAKE_COMMAND}" -DCMAKE_INSTALL_COMPONENT=robot-workbench -DBUILD_TYPE=Debug

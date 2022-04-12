@@ -49,6 +49,8 @@ SET(Mod_SRCS
 )
 
 SET(Robot_SRCS
+    AttachablePartObject.cpp
+    AttachablePartObject.h
     RobotObject.cpp
     RobotObject.h
     TrajectoryObject.cpp
@@ -71,6 +73,8 @@ SET(Robot_SRCS
     Simulation.h
     Waypoint.cpp
     Waypoint.h
+    RobCoordSystem.h
+    RobCoordSystem.cpp 
     ${Mod_SRCS}
     ${Python_SRCS}
 )
@@ -134,4 +138,4 @@ endif()
 SET_BIN_DIR(Robot Robot /Mod/Robot)
 SET_PYTHON_PREFIX_SUFFIX(Robot)
 
-INSTALL(TARGETS Robot DESTINATION ${CMAKE_INSTALL_LIBDIR})
+INSTALL(TARGETS Robot DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT robot-workbench)

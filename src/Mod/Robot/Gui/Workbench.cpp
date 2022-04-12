@@ -187,6 +187,7 @@ Gui::ToolBarItem* Workbench::setupToolBars() const
     *part << "Robot_RestoreHomePos";
     *part << "Separator";
     *part << "Robot_Simulate";
+    *part << "Robot_ImportAttachable";
     return root;
 }
 

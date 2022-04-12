@@ -42,6 +42,7 @@
 #include "TrajectorySimulate.h"
 #include "TaskDlgSimulate.h"
 
+#include <Mod/Robot/App/AttachablePartObject.h>
 
 using namespace std;
 using namespace RobotGui;
@@ -265,6 +266,51 @@ bool CmdRobotSimulate::isActive(void)
 }
 
 
+// #####################################################################################################
+DEF_STD_CMD_A(CmdRobotImportAttachable)
+
+CmdRobotImportAttachable::CmdRobotImportAttachable()
+	:Command("Robot_ImportAttachable")
+{
+    sAppModule      = "Robot";
+    sGroup          = QT_TR_NOOP("Robot");
+    sMenuText       = QT_TR_NOOP("Import an attachalbe object...");
+    sToolTipText    = QT_TR_NOOP("Import an attachalbe object...");
+    sWhatsThis      = "Robot_ImportAttachable";
+    sStatusTip      = sToolTipText;
+    sPixmap         = "Robot_CreateRobot";
+}
+
+
+void CmdRobotImportAttachable::activated(int)
+{
+    Robot::AttachablePartObject* pAttachable = 0;
+    std::string FeatName = getUniqueObjectName("Attachable");
+    
+    // Robot::AttachablePartObject attach = Robot::AttachablePartObject::AttachablePartObject();
+    // doCommand(Doc,"App.ActiveDocument.addObject(\"Robot::AttachablePartObject\",\"%s\")",FeatName.c_str());
+    Base::BaseClass* base = static_cast<Base::BaseClass*>(Base::Type::createInstanceByName("Robot::AttachablePartObject",true));
+    // Base::BaseClass* Cbase = static_cast<Base::BaseClass*>(Base::Type::createInstanceByName("Robot::RobCoordSystem",true)); 
+    // std::string FeatName = getUniqueObjectName("Robot");
+    // std::string RobotPath = "Mod/Robot/Lib/Kuka/kr500_1.wrl";
+    // std::string KinematicPath = "Mod/Robot/Lib/Kuka/kr500_1.csv";
+
+    // openCommand("Place robot");
+    // doCommand(Doc,"App.activeDocument().addObject(\"Robot::RobotObject\",\"%s\")",FeatName.c_str());
+    // doCommand(Doc,"App.activeDocument().%s.RobotVrmlFile = App.getResourceDir()+\"%s\"",FeatName.c_str(),RobotPath.c_str());
+    // doCommand(Doc,"App.activeDocument().%s.RobotKinematicFile = App.getResourceDir()+\"%s\"",FeatName.c_str(),KinematicPath.c_str());
+    // doCommand(Doc,"App.activeDocument().%s.Axis2 = -90",FeatName.c_str());
+    // doCommand(Doc,"App.activeDocument().%s.Axis3 = 90",FeatName.c_str());
+    // doCommand(Doc,"App.activeDocument().%s.Axis5 = 45",FeatName.c_str());
+    // updateActive();
+    // commitCommand();
+
+}
+
+bool CmdRobotImportAttachable::isActive(void)
+{
+    return hasActiveDocument();
+}
 
 // #####################################################################################################
 
@@ -278,4 +324,5 @@ void CreateRobotCommands(void)
     rcCmdMgr.addCommand(new CmdRobotSetHomePos());
     rcCmdMgr.addCommand(new CmdRobotConstraintAxle());
     rcCmdMgr.addCommand(new CmdRobotSimulate());
+    rcCmdMgr.addCommand(new CmdRobotImportAttachable());
  }

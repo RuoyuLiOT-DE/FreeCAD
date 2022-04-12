@@ -45,6 +45,7 @@
 #include "Edge2TracObject.h"
 #include "TrajectoryCompound.h"
 #include "TrajectoryDressUpObject.h"
+#include "AttachablePartObject.h"
 
 namespace Robot {
 class Module : public Py::ExtensionModule<Module>
@@ -128,6 +129,7 @@ PyMOD_INIT_FUNC(Robot)
     Robot::PropertyTrajectory      ::init();
     Robot::TrajectoryCompound      ::init();
     Robot::TrajectoryDressUpObject ::init();
+    Robot::AttachablePartObject    ::init();
 
     PyMOD_Return(robotModule);
 }
