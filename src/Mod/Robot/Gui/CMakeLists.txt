@@ -43,6 +43,7 @@ set(RobotGui_UIC_SRCS
     TaskRobotControl.ui
     TaskEdge2TracParameter.ui
     TaskTrajectoryDressUpParameter.ui
+    TaskOTAttacher.ui
 )
 
 if(BUILD_QT5)
@@ -64,6 +65,8 @@ set(RobotGui_MOC_HDRS
     TaskEdge2TracParameter.h
     TaskTrajectoryDressUpParameter.h
     TaskWatcher.h
+    TaskOTAttacher.h
+    TaskDlgOTAttacher.H
 )
 fc_wrap_cpp(RobotGui_MOC_SRCS ${RobotGui_MOC_HDRS})
 SOURCE_GROUP("Qt" FILES ${PartDesignGui_MOC_SRCS})
@@ -125,6 +128,9 @@ SET(RobotGui_SRCS_TaskBoxes
     TaskTrajectoryDressUpParameter.h
     TaskWatcher.h
     TaskWatcher.cpp
+    TaskOTAttacher.ui
+    TaskOTAttacher.h
+    TaskOTAttacher.cpp
 )
 SOURCE_GROUP("Task_Boxes" FILES ${RobotGui_SRCS_TaskBoxes})
 
@@ -137,6 +143,8 @@ SET(RobotGui_SRCS_TaskDlg
     TaskDlgTrajectoryCompound.cpp
     TaskDlgTrajectoryDressUp.h
     TaskDlgTrajectoryDressUp.cpp
+    TaskDlgOTAttacher.h
+    TaskDlgOTAttacher.cpp
 )
 SOURCE_GROUP("Task_Dialogs" FILES ${RobotGui_SRCS_TaskDlg})
 

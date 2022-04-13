@@ -44,6 +44,8 @@
 
 #include <Mod/Robot/App/AttachablePartObject.h> // To use ot-attachable object
 // #include <Mod/PartDesign/App/DatumCS.h> // To use the coordinate system defined in partdesgin module ?
+#include "TaskDlgOTAttacher.h"
+#include <Mod/Part/Gui/ViewProvider.h>
 
 using namespace std;
 using namespace RobotGui;
@@ -370,7 +372,23 @@ CmdEditAttachment::CmdEditAttachment()
 //FIXME: 
 void CmdEditAttachment::activated(int)
 {
-    
+    std::vector<App::DocumentObject*> objectsList = Gui::SelectionSingleton::instance().getObjectsOfType(Robot::AttachablePartObject::getClassTypeId());
+    App::Document* doc = App::GetApplication().getActiveDocument();
+    if (doc == NULL)
+        return;
+    if (objectsList.size() !=1 )
+    {
+        Base::Console().Message("Wrong selection");
+        return;
+    }
+    PartGui::ViewProviderPart * vpPart = dynamic_cast<PartGui::ViewProviderPart*>(Gui::Application::Instance->getViewProvider(objectsList.front()));
+    if(!vpPart)
+    {
+        Base::Console().Message("Failed getting viewprovider");
+        return;
+    }
+    Gui::TaskView::TaskDialog* dlg = new TaskDlgOTAttacher(vpPart);
+    Gui::Control().showDialog(dlg);
 }
 
 bool CmdEditAttachment::isActive(void)
