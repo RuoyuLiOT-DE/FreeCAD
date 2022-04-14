@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>286</width>
-    <height>604</height>
+    <width>301</width>
+    <height>618</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,7 @@
      <item>
       <widget class="QPushButton" name="buttonParentFrame">
        <property name="text">
-        <string>Anchor to</string>
+        <string>ParentFrame</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
@@ -45,17 +45,20 @@
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Anchor mode:</string>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QListWidget" name="listOfModes">
-     <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
-     </property>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Anchor activation status:</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBoxAttachmentActivate">
+      <property name="text">
+       <string>activated</string>
+      </property>
+     </widget>
     </widget>
    </item>
    <item>
@@ -334,7 +337,6 @@ of object being attached.</string>
  <tabstops>
   <tabstop>buttonParentFrame</tabstop>
   <tabstop>lineParentFrame</tabstop>
-  <tabstop>listOfModes</tabstop>
   <tabstop>attachmentOffsetX</tabstop>
   <tabstop>attachmentOffsetY</tabstop>
   <tabstop>attachmentOffsetZ</tabstop>
