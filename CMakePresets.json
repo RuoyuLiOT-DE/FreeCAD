@@ -13,10 +13,8 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
                 "CMAKE_CXX_FLAGS": "/MP /EHsc /DWIN32 ",
-                // "FREECAD_LIBPACK_DIR": "D:\\Dev\\Libs\\FreeCADLibs_12.5.1_x64_VC17",
                 "FREECAD_LIBPACK_DIR": "C:\\Dev\\Libs\\FreeCADLibs_12.5.1_x64_VC17",
                 "FREECAD_USE_MP_COMPILE_FLAG": true,
-                // "DOXYGEN_EXECUTABLE": "D:\\doxygen\\bin\\doxygen.exe",
                 "DOXYGEN_EXECUTABLE": "C:\\Dev\\Libs\\doxygen\\bin\\doxygen.exe",
                 "BUILD_FEM": false,
                 "BUILD_FEM_NETGEN": false,
@@ -37,6 +35,17 @@
             "warnings": {
                 "dev": true
             }
+        },
+        {
+            "name": "home_config_msvc2019_x64_debug",
+            "displayName": "home_config_msvc2019_x64_debug",
+            "inherits": [
+                "config_msvc2019_x64_debug"
+            ],
+            "cacheVariables": {
+                "FREECAD_LIBPACK_DIR": "D:\\Dev\\Libs\\FreeCADLibs_12.5.1_x64_VC17",
+                "DOXYGEN_EXECUTABLE": "D:\\doxygen\\bin\\doxygen.exe"
+            }
         }
     ],
     "buildPresets": [
@@ -47,8 +56,18 @@
             "configurePreset": "config_msvc2019_x64_debug",
             "configuration": "Debug",
             "verbose": true,
-            "nativeToolOptions": ["/m"]
+            "nativeToolOptions": [
+                "/m"
+            ]
+        },
+        {
+            "name": "home_build_msvc2019_x64_debug",
+            "description": "",
+            "displayName": "home_build_msvc2019_x64_debug",
+            "inherits": [
+                "build_msvc2019_x64_debug"
+            ],
+            "configurePreset": "home_config_msvc2019_x64_debug"
         }
-
     ]
 }

@@ -15,6 +15,17 @@
             "preLaunchTask": "msvc-cmake-build"
         },
         {
+            "name": "home-robot-debug",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "D:\\Dev\\FreeCAD\\out\\install\\home_config_msvc2019_x64_debug\\bin\\FreeCAD_d.exe",
+            "stopAtEntry": false,
+            "cwd": "D:\\Dev\\FreeCAD\\out\\install\\home_config_msvc2019_x64_debug\\bin\\",
+            "console": "internalConsole",
+            "preLaunchTask": "msvc-cmake-build"
+            
+        },
+        {
             "name": "RioD-msvc-cmake-debug",
             "type": "cppvsdbg",
             "request": "launch",
