@@ -18,9 +18,45 @@ namespace RobotGui
 
         /*member functions*/
     private Q_SLOTS:
+
+        ///@brief Activating the parent frame selection feature provided by this tool
+        ///       indicated by a internal bool variable
+        ///@param clicked
+        ///
         void onButtonParentFrame(const bool clicked);
+
+        ///@brief
+        ///
+        ///@param text
+        ///
+        // void onButtonTextParentFrame(const QString &text);
+        // void onAttachmentOffsetChanged(double, int idx); // Reused by individual property changing spin box
+        // void onAttachmentOffsetXChanged(double);
+        // void onAttachmentOffsetYChanged(double);
+        // void onAttachmentOffsetZChanged(double);
+        // void onAttachmentOffsetYawChanged(double);
+        // void onAttachmentOffsetPitchChanged(double);
+        // void onAttachmentOffsetRollChanged(double);
+
+        ///@brief Configure whether use current transformation as attachment offset
+        ///
+        ///@param toggled
+        ///
         void onCheckBoxUseCurrentTransform(const bool toggled);
+
+        ///@brief Configure wheter activate the attachment
+        ///
+        ///@param toggled
+        ///
         void onCheckBoxAttachmentActivate(const bool toggled);
+
+    private:
+
+        ///@brief updatePreview: calculate attachment, update 3d view, update status message (status mesage is on top of this task panel)
+        ///
+        ///@return true if attachment calculation was successful, false otherwise
+        ///
+        bool updatePreview();
 
     private:
         ///@brief Must override function inherited from SelectionObserver, this observer bedefault will be attached to a subject at construction
@@ -29,14 +65,18 @@ namespace RobotGui
         ///
         void onSelectionChanged(const Gui::SelectionChanges &msg) override;
 
-        ///@brief 
+        ///@brief Update the attachment offset ui from model
         ///
-        ///@param refstrings 
-        ///@param refnames 
+        ///
+        void updateAttachmentOffsetUI();
+
+        ///@brief
+        ///
+        ///@param refstrings
+        ///@param refnames
         ///
         void makeRefStrings(std::vector<QString> &refstrings, std::vector<std::string> &refnames);
 
-        void updateAttachmentOffsetUI();
 
         /*member variable*/
     protected:

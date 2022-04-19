@@ -9,6 +9,9 @@
 #include <App/OriginFeature.h>
 #include <Mod/Part/App/DatumFeature.h> //For dealing with subnames
 
+#include <Mod/Part/Gui/AttacherTexts.h>
+#include <Mod/Part/App/Attacher.h> // For dealing with translatable mode text
+
 #include "ui_TaskOTAttacher.h"
 #include "TaskOTAttacher.h"
 
@@ -38,33 +41,20 @@ namespace RobotGui
         // Connecting parent frame selection button and line edit
         connect(ui->buttonParentFrame, SIGNAL(clicked(bool)),
                 this, SLOT(onButtonParentFrame(bool)));
-        // Connecting offset parameters
-        // connect(ui->attachmentOffsetX, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetXChanged(double)));
-        // connect(ui->attachmentOffsetY, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetYChanged(double)));
-        // connect(ui->attachmentOffsetZ, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetZChanged(double)));
-        // connect(ui->attachmentOffsetYaw, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetYawChanged(double)));
-        // connect(ui->attachmentOffsetPitch, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetPitchChanged(double)));
-        // connect(ui->attachmentOffsetRoll, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetRollChanged(double)));
+        connect(ui->lineParentFrame, SIGNAL(textEdited(QString)),
+                this, SLOT(onLineParentFrame(QString)));
 
-        // connect(ui->lineParentFrame, SIGNAL(textEdited(QString)),
-        //         this, SLOT(onLineParentFrame(QString)));
+        // Connecting offset parameters
+        connect(ui->attachmentOffsetX, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetXChanged(double)));
+        connect(ui->attachmentOffsetY, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetYChanged(double)));
+        connect(ui->attachmentOffsetZ, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetZChanged(double)));
+        connect(ui->attachmentOffsetYaw, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetYawChanged(double)));
+        connect(ui->attachmentOffsetPitch, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetPitchChanged(double)));
+        connect(ui->attachmentOffsetRoll, SIGNAL(valueChanged(double)), this, SLOT(onAttachmentOffsetRollChanged(double)));
 
         this->groupLayout()->addWidget(proxy);
 
-        // Get the Attachment property
-        Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
-
-        // Suppport of this Attachment is a PropertyLinkSubList type, refer to notes for image
-        // getSubValues() returns the selected subelements of the Support shape, like a Face or Edge or Vertex
-        std::vector<std::string> refnames = pcAttach->Support.getSubValues(); // Need to be converted to refstrings
-        std::vector<QString> refstrings;                                      // Prepare for display in line editor
-
-        // TODO: 
-        makeRefStrings(refstrings, refnames);
-        //----------Debug
-        Base::Console().Message("RefString first, %s", refstrings.front().toStdString().c_str());
         // Temporarily prevent unnecessary feature recomputes
-
         ui->checkBoxAttachmentActivate->blockSignals(true);
         ui->checkBoxUseCurrentTransform->blockSignals(true);
         ui->buttonParentFrame->blockSignals(true);
@@ -76,13 +66,57 @@ namespace RobotGui
         ui->attachmentOffsetPitch->blockSignals(true);
         ui->attachmentOffsetRoll->blockSignals(true);
 
-        ui->checkBoxAttachmentActivate->setChecked(pcAttach->MapMode.getValue()); // mmDeactivated=0, mmObjectXY=2 FIXME: currently we only use these two modes
+        // Get the Attachment property
+        Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
+
+        // Suppport of this Attachment is a PropertyLinkSubList type, refer to notes for image
+        // getSubValues() returns the selected subelements of the Support shape, like a Face or Edge or Vertex
+        std::vector<std::string> refnames = pcAttach->Support.getSubValues(); // Need to be converted to refstrings
+        std::vector<QString> refstrings;                                      // Prepare for display in line editor
+
+        // Generate names (in string) of references elements of the current targeting object
+        // to display them in the line editor
+        makeRefStrings(refstrings, refnames);
+        //----------Debug
+        Base::Console().Message("RefString first, %s\n", refstrings.front().toStdString().c_str());
+        ui->lineParentFrame->setText(refstrings[0]);                                  // FIXME: CHECK result makeRefStrings??
+        ui->lineParentFrame->setProperty("RefName", QByteArray(refnames[0].c_str())); // Use the subname to change the button display name
+                                                                                      // FIXME: where is this RefName property defined?
+
+        // By default, we use the current transformation as anchor offset
+        // and deactivate the attachement
+        ui->checkBoxAttachmentActivate->setChecked((bool)pcAttach->MapMode.getValue()); // mmDeactivated=0, mmObjectXY=2 FIXME: currently we only use these two modes
         ui->checkBoxUseCurrentTransform->setChecked(this->use_current);
+
+        // FIXME: learn more about the freecad gui elements Gui::prefQuantitySpinBox and Gui::QuantitySpinBox
+        // It can binds the property of an object with the Gui-element, so we can
+        // already sync those properties with the user-input, without adding any control to that????
+
+        ui->attachmentOffsetX->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(), std::string("AttachmentOffset.Base.x")));
+        ui->attachmentOffsetY->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(), std::string("AttachmentOffset.Base.y")));
+        ui->attachmentOffsetZ->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(), std::string("AttachmentOffset.Base.z")));
+
+        ui->attachmentOffsetYaw->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(), std::string("AttachmentOffset.Rotation.Yaw")));
+        ui->attachmentOffsetPitch->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(), std::string("AttachmentOffset.Rotation.Pitch")));
+        ui->attachmentOffsetRoll->bind(App::ObjectIdentifier::parse(ViewProvider->getObject(), std::string("AttachmentOffset.Rotation.Roll")));
 
         // Restore the blocked signals
         ui->checkBoxUseCurrentTransform->blockSignals(false);
         ui->checkBoxAttachmentActivate->blockSignals(false);
         ui->buttonParentFrame->blockSignals(false);
+        ui->lineParentFrame->blockSignals(true);
+        ui->attachmentOffsetX->blockSignals(true);
+        ui->attachmentOffsetY->blockSignals(true);
+        ui->attachmentOffsetZ->blockSignals(true);
+        ui->attachmentOffsetYaw->blockSignals(true);
+        ui->attachmentOffsetPitch->blockSignals(true);
+        ui->attachmentOffsetRoll->blockSignals(true);
+        // FIXME: Ignore the TaskAttacher::visibilityAutomation() for now, it is used in editing mode of document objects to show and hide models
+        // TODO: updateAttachmentOffsetUI()
+        // TODO: updateRefrencesUI()
+        // TODO: updateListOfModes()
+        // TODO: selectMapMode()
+        // TODO: updatePreiview()
     }
 
     void TaskOTAttacher::onButtonParentFrame(const bool clicked)
@@ -111,7 +145,7 @@ namespace RobotGui
         }
 
         isButParFraChecked = 1 - int(isButParFraChecked);
-    }
+    } // end onButtonParentFrame
 
     void TaskOTAttacher::onCheckBoxUseCurrentTransform(bool toggled)
     {
@@ -119,6 +153,23 @@ namespace RobotGui
         if (!ViewProvider)
             return;
         this->use_current = ui->checkBoxUseCurrentTransform->checkState();
+
+        if(use_current) // If using current transformation option is enabled
+        {
+            // Make sure the parent frame is already selected
+            Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
+            std::vector<App::DocumentObject*> refs = pcAttach->Support.getValues();
+            if (!refs.empty())
+            {
+                App::PropertyPlacement* propla_parent = Base::freecad_dynamic_cast<App::PropertyPlacement>(refs.front()->getPropertyByName("Placement"));
+                App::PropertyPlacement* propla_child =  Base::freecad_dynamic_cast<App::PropertyPlacement>(
+                    ViewProvider->getObject()->getPropertyByName("Placement"));
+                Base::Placement offset = propla_parent->getValue().inverse() * propla_child->getValue(); //Inverse returns a copy
+                pcAttach->AttachmentOffset.setValue(offset);
+                updateAttachmentOffsetUI();
+            }
+        }
+        // else do nothing
     }
 
     void TaskOTAttacher::onCheckBoxAttachmentActivate(bool toggled)
@@ -192,6 +243,119 @@ namespace RobotGui
         }
     } // end onSelectionChanged
 
+    void TaskOTAttacher::updateAttachmentOffsetUI()
+    {
+        if (!ViewProvider)
+            return;
+
+        Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
+        Base::Placement pl = pcAttach->AttachmentOffset.getValue();
+        Base::Vector3d pos = pl.getPosition();
+        Base::Rotation rot = pl.getRotation();
+        double yaw, pitch, roll;
+        rot.getYawPitchRoll(yaw, pitch, roll);
+
+        bool bBlock = true;
+        ui->attachmentOffsetX->blockSignals(bBlock);
+        ui->attachmentOffsetY->blockSignals(bBlock);
+        ui->attachmentOffsetZ->blockSignals(bBlock);
+        ui->attachmentOffsetYaw->blockSignals(bBlock);
+        ui->attachmentOffsetPitch->blockSignals(bBlock);
+        ui->attachmentOffsetRoll->blockSignals(bBlock);
+
+        ui->attachmentOffsetX->setValue(Base::Quantity(pos.x, Base::Unit::Length));
+        ui->attachmentOffsetY->setValue(Base::Quantity(pos.y, Base::Unit::Length));
+        ui->attachmentOffsetZ->setValue(Base::Quantity(pos.z, Base::Unit::Length));
+        ui->attachmentOffsetYaw->setValue(yaw);
+        ui->attachmentOffsetPitch->setValue(pitch);
+        ui->attachmentOffsetRoll->setValue(roll);
+
+        auto expressions = ViewProvider->getObject()->ExpressionEngine.getExpressions();
+        bool bRotationBound = false;
+        bRotationBound = bRotationBound ||
+                         expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(), std::string("AttachmentOffset.Rotation.Angle"))) != expressions.end();
+        bRotationBound = bRotationBound ||
+                         expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(), std::string("AttachmentOffset.Rotation.Axis.x"))) != expressions.end();
+        bRotationBound = bRotationBound ||
+                         expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(), std::string("AttachmentOffset.Rotation.Axis.y"))) != expressions.end();
+        bRotationBound = bRotationBound ||
+                         expressions.find(App::ObjectIdentifier::parse(ViewProvider->getObject(), std::string("AttachmentOffset.Rotation.Axis.z"))) != expressions.end();
+
+        ui->attachmentOffsetYaw->setEnabled(!bRotationBound);
+        ui->attachmentOffsetPitch->setEnabled(!bRotationBound);
+        ui->attachmentOffsetRoll->setEnabled(!bRotationBound);
+
+        if (bRotationBound)
+        {
+            QString tooltip = tr("Not editable because rotation of AttachmentOffset is bound by expressions.");
+            ui->attachmentOffsetYaw->setToolTip(tooltip);
+            ui->attachmentOffsetPitch->setToolTip(tooltip);
+            ui->attachmentOffsetRoll->setToolTip(tooltip);
+        }
+
+        bBlock = false;
+        ui->attachmentOffsetX->blockSignals(bBlock);
+        ui->attachmentOffsetY->blockSignals(bBlock);
+        ui->attachmentOffsetZ->blockSignals(bBlock);
+        ui->attachmentOffsetYaw->blockSignals(bBlock);
+        ui->attachmentOffsetPitch->blockSignals(bBlock);
+        ui->attachmentOffsetRoll->blockSignals(bBlock);
+    }
+
+    // FIXME: Think about where do we need to call this updatePreview to avoid unnecessary recompute
+    bool TaskOTAttacher::updatePreview()
+    {
+
+        if (!ViewProvider)
+            return false;
+
+        Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
+        QString errMessage;
+        bool attached = false;
+        try
+        {
+            attached = pcAttach->positionBySupport(); // This step update the 3D view
+        }
+        catch (Base::Exception &err)
+        {
+            errMessage = QString::fromLatin1(err.what());
+        }
+        catch (Standard_Failure &err)
+        {
+            errMessage = tr("OCC error: %1").arg(QString::fromLatin1(err.GetMessageString()));
+        }
+        catch (...)
+        {
+            errMessage = tr("unknown error");
+        }
+        if (errMessage.length() > 0) // If got any error message, attached := false
+        {
+            ui->message->setText(tr("Attachment mode failed: %1").arg(errMessage));
+            ui->message->setStyleSheet(QString::fromLatin1("QLabel{color: red;}"));
+        }
+        else // In case no errors attached could be true or false
+        {
+            if (!attached) // If the attachment is deactivated, attached := false
+            {
+                ui->message->setText(tr("Not attached"));
+                ui->message->setStyleSheet(QString());
+            }
+            else // attachment will be true,
+            {
+                std::vector<QString> strs = AttacherGui::getUIStrings(pcAttach->attacher().getTypeId(), Attacher::eMapMode(pcAttach->MapMode.getValue()));
+                ui->message->setText(tr("Attached with mode %1").arg(strs[0]));
+                ui->message->setStyleSheet(QString::fromLatin1("QLabel{color: green;}"));
+            }
+        }
+
+        // Update status message for attachment offset and activation state of offset group box
+        QString splmLabelText = attached ? tr("Attachment Offset (in local coordinates):") : tr("Attachment Offset (inactive - not attached):");
+        ui->groupBox_AttachmentOffset->setTitle(splmLabelText);
+        ui->groupBox_AttachmentOffset->setEnabled(attached);
+
+        return attached;
+    }
+
     const QString makeRefString(const App::DocumentObject *obj, const std::string &sub)
     {
         if (obj == NULL)
@@ -222,7 +386,8 @@ namespace RobotGui
             // something else that face/edge/vertex. Can be empty string.
             return QString::fromLatin1(obj->getNameInDocument()) + (sub.length() > 0 ? QString::fromLatin1(":") : QString()) + QString::fromLatin1(sub.c_str());
         }
-    }
+    } // end makeRefString
+
     void TaskOTAttacher::makeRefStrings(std::vector<QString> &refstrings, std::vector<std::string> &refnames)
     {
         Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();

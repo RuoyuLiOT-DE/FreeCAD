@@ -23,6 +23,7 @@ link_directories(${OCC_LIBRARY_DIR})
 set(RobotGui_LIBS
     Robot
     FreeCADGui
+    PartGui
     # PartDesign
     # PartDesignGui
 )
