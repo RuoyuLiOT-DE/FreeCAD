@@ -2,6 +2,7 @@
 #include <Gui/TaskView/TaskView.h>
 #include <Gui/Selection.h>
 
+namespace Gui {class Document;}
 namespace RobotGui
 {
     class Ui_TaskOTAttacher;
@@ -29,7 +30,7 @@ namespace RobotGui
         ///
         ///@param text
         ///
-        // void onButtonTextParentFrame(const QString &text);
+        void onLineParentFrame(const QString &text);
         // void onAttachmentOffsetChanged(double, int idx); // Reused by individual property changing spin box
         // void onAttachmentOffsetXChanged(double);
         // void onAttachmentOffsetYChanged(double);
@@ -51,6 +52,7 @@ namespace RobotGui
         void onCheckBoxAttachmentActivate(const bool toggled);
 
     private:
+        void updateButtonParentFrame();
 
         ///@brief updatePreview: calculate attachment, update 3d view, update status message (status mesage is on top of this task panel)
         ///
@@ -58,7 +60,6 @@ namespace RobotGui
         ///
         bool updatePreview();
 
-    private:
         ///@brief Must override function inherited from SelectionObserver, this observer bedefault will be attached to a subject at construction
         ///       FIXME:Attention!!!! now with any selection change, this function is called 3 times
         ///@param msg
@@ -70,6 +71,8 @@ namespace RobotGui
         ///
         void updateAttachmentOffsetUI();
 
+        void useCurrentTransform();
+
         ///@brief
         ///
         ///@param refstrings
@@ -77,6 +80,8 @@ namespace RobotGui
         ///
         void makeRefStrings(std::vector<QString> &refstrings, std::vector<std::string> &refnames);
 
+        void objectDeleted(const Gui::ViewProviderDocumentObject &);
+        void documentDeleted(const Gui::Document &);
 
         /*member variable*/
     protected:
@@ -88,5 +93,8 @@ namespace RobotGui
         std::unique_ptr<Ui_TaskOTAttacher> ui;
         bool use_current;        // Wheter we use current transformation as default attachemnt offset
         bool isButParFraChecked; // Record button state of parent frame
+        typedef boost::signals2::connection Connection;
+        Connection connectDelObject;
+        Connection connectDelDocument;
     };
 }

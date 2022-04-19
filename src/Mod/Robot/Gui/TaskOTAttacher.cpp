@@ -12,9 +12,41 @@
 #include <Mod/Part/Gui/AttacherTexts.h>
 #include <Mod/Part/App/Attacher.h> // For dealing with translatable mode text
 
+#include <Gui/Application.h> 
 #include "ui_TaskOTAttacher.h"
 #include "TaskOTAttacher.h"
 
+const QString makeRefString(const App::DocumentObject *obj, const std::string &sub)
+    {
+        if (obj == NULL)
+            return QObject::tr("No reference selected");
+
+        if (obj->getTypeId().isDerivedFrom(App::OriginFeature::getClassTypeId()) ||
+            obj->getTypeId().isDerivedFrom(Part::Datum::getClassTypeId()))
+            // App::Plane, Line or Datum feature
+            return QString::fromLatin1(obj->getNameInDocument());
+
+        if ((sub.size() > 4) && (sub.substr(0, 4) == "Face"))
+        {
+            int subId = std::atoi(&sub[4]);
+            return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Face") + QString::number(subId);
+        }
+        else if ((sub.size() > 4) && (sub.substr(0, 4) == "Edge"))
+        {
+            int subId = std::atoi(&sub[4]);
+            return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Edge") + QString::number(subId);
+        }
+        else if ((sub.size() > 6) && (sub.substr(0, 6) == "Vertex"))
+        {
+            int subId = std::atoi(&sub[6]);
+            return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Vertex") + QString::number(subId);
+        }
+        else
+        {
+            // something else that face/edge/vertex. Can be empty string.
+            return QString::fromLatin1(obj->getNameInDocument()) + (sub.length() > 0 ? QString::fromLatin1(":") : QString()) + QString::fromLatin1(sub.c_str());
+        }
+    } // end makeRefString
 namespace RobotGui
 {
     TaskOTAttacher::TaskOTAttacher(Gui::ViewProviderDocumentObject *ViewProvider, QWidget *parent,
@@ -87,6 +119,8 @@ namespace RobotGui
         // and deactivate the attachement
         ui->checkBoxAttachmentActivate->setChecked((bool)pcAttach->MapMode.getValue()); // mmDeactivated=0, mmObjectXY=2 FIXME: currently we only use these two modes
         ui->checkBoxUseCurrentTransform->setChecked(this->use_current);
+        if (this->use_current)     // If use current transform as attachment offset
+            useCurrentTransform();
 
         // FIXME: learn more about the freecad gui elements Gui::prefQuantitySpinBox and Gui::QuantitySpinBox
         // It can binds the property of an object with the Gui-element, so we can
@@ -104,48 +138,150 @@ namespace RobotGui
         ui->checkBoxUseCurrentTransform->blockSignals(false);
         ui->checkBoxAttachmentActivate->blockSignals(false);
         ui->buttonParentFrame->blockSignals(false);
-        ui->lineParentFrame->blockSignals(true);
-        ui->attachmentOffsetX->blockSignals(true);
-        ui->attachmentOffsetY->blockSignals(true);
-        ui->attachmentOffsetZ->blockSignals(true);
-        ui->attachmentOffsetYaw->blockSignals(true);
-        ui->attachmentOffsetPitch->blockSignals(true);
-        ui->attachmentOffsetRoll->blockSignals(true);
+        ui->lineParentFrame->blockSignals(false);
+        ui->attachmentOffsetX->blockSignals(false);
+        ui->attachmentOffsetY->blockSignals(false);
+        ui->attachmentOffsetZ->blockSignals(false);
+        ui->attachmentOffsetYaw->blockSignals(false);
+        ui->attachmentOffsetPitch->blockSignals(false);
+        ui->attachmentOffsetRoll->blockSignals(false);
         // FIXME: Ignore the TaskAttacher::visibilityAutomation() for now, it is used in editing mode of document objects to show and hide models
-        // TODO: updateAttachmentOffsetUI()
-        // TODO: updateRefrencesUI()
-        // TODO: updateListOfModes()
-        // TODO: selectMapMode()
-        // TODO: updatePreiview()
+        // FIXME: we don't use for now updateRefrencesUI()
+        // FIXME: we don't use for now updateListOfModes()
+        // FIXME: we don't use for now selectMapMode()
+
+        updateAttachmentOffsetUI();
+        updatePreview();
+        // FIXME: learn the logic behind that connect object deletion with slot
+        auto bnd1 = boost::bind(&TaskOTAttacher::objectDeleted, this, boost::placeholders::_1);
+        auto bnd2 = boost::bind(&TaskOTAttacher::documentDeleted, this, boost::placeholders::_1);
+        Gui::Document *document = Gui::Application::Instance->getDocument(ViewProvider->getObject()->getDocument());
+        connectDelObject = document->signalDeletedObject.connect(bnd1);
+        connectDelDocument = document->signalDeleteDocument.connect(bnd2);
     }
 
     void TaskOTAttacher::onButtonParentFrame(const bool clicked)
     {
+        isButParFraChecked = (bool)(1 - (int)isButParFraChecked);
         if (clicked)
             Gui::Selection().clearSelection(); // FIXME: WHY???
 
-        // update the button to indicate we are selecting
-        // !!!!and also to enable selection being registered to the task
+        updateButtonParentFrame();
+
+    } // end onButtonParentFrame
+
+    void TaskOTAttacher::onLineParentFrame(const QString &text)
+    {
         if (!ViewProvider)
             return;
 
-        QAbstractButton *button;
-        button = ui->buttonParentFrame;
+        QLineEdit *line = ui->lineParentFrame;
+        if (line == NULL)
+            return;
+
+        if (text.length() == 0) // In case user clear content inside line editor
+        {
+            // Reference was removed
+            // Update the reference list
+            Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
+            std::vector<App::DocumentObject *> refs = pcAttach->Support.getValues();
+            std::vector<std::string> refnames = pcAttach->Support.getSubValues();
+
+            std::vector<App::DocumentObject *> newrefs;
+            std::vector<std::string> newrefnames;
+
+            pcAttach->Support.setValues(newrefs, newrefnames); // Set empty to remove support
+            pcAttach->MapMode.setValue(Attacher::eMapMode::mmDeactivated);
+            pcAttach->AttachmentOffset.setValue(Base::Placement::Placement()); // Restore the transform
+            
+            updateAttachmentOffsetUI();
+            updatePreview(); // get called after altering the attachment
+
+            // Update the UI
+            std::vector<QString> refstrings;
+            makeRefStrings(refstrings, newrefnames);
+            ui->lineParentFrame->setText(refstrings[0]);
+            ui->lineParentFrame->setProperty("RefName", QByteArray(newrefnames[0].c_str()));
+            return;
+        }
+        // Incase the line editor get editted
+        QStringList parts = text.split(QChar::fromLatin1(':'));
+        if (parts.length() < 2)
+            parts.push_back(QString::fromLatin1(""));
+        // Check whether this is the name of an App::Plane or Part::Datum feature
+        App::DocumentObject *obj = ViewProvider->getObject()->getDocument()->getObject(parts[0].toLatin1());
+        if (obj == NULL)
+            return;
+
+        std::string subElement;
+
+        if (obj->getTypeId().isDerivedFrom(App::Plane::getClassTypeId()))
+        {
+            // everything is OK (we assume a Part can only have exactly 3 App::Plane objects located at the base of the feature tree)
+            subElement = "";
+        }
+        else if (obj->getTypeId().isDerivedFrom(App::Line::getClassTypeId()))
+        {
+            // everything is OK (we assume a Part can only have exactly 3 App::Line objects located at the base of the feature tree)
+            subElement = "";
+        }
+        else if (obj->getTypeId().isDerivedFrom(Part::Datum::getClassTypeId()))
+        {
+            subElement = "";
+        }
+        else // Incase this is a subelement of another shape
+        {
+            // TODO: check validity of the text that was entered: Does subElement actually reference to an element on the obj?
+
+            // We must expect that "text" is the translation of "Face", "Edge" or "Vertex" followed by an ID.
+            QRegExp rx;
+            std::stringstream ss;
+
+            rx.setPattern(QString::fromLatin1("^") + tr("Face") + QString::fromLatin1("(\\d+)$"));
+            if (parts[1].indexOf(rx) >= 0)
+            {
+                int faceId = rx.cap(1).toInt();
+                ss << "Face" << faceId;
+            }
+            else
+            {
+                rx.setPattern(QString::fromLatin1("^") + tr("Edge") + QString::fromLatin1("(\\d+)$"));
+                if (parts[1].indexOf(rx) >= 0)
+                {
+                    int lineId = rx.cap(1).toInt();
+                    ss << "Edge" << lineId;
+                }
+                else
+                {
+                    rx.setPattern(QString::fromLatin1("^") + tr("Vertex") + QString::fromLatin1("(\\d+)$"));
+                    if (parts[1].indexOf(rx) >= 0)
+                    {
+                        int vertexId = rx.cap(1).toInt();
+                        ss << "Vertex" << vertexId;
+                    }
+                    else
+                    {
+                        // none of Edge/Vertex/Face. May be empty string.
+                        // Feed in whatever user supplied, even if invalid.
+                        ss << parts[1].toLatin1().constData();
+                    }
+                }
+            }
+
+            // line->setProperty("RefName", QByteArray(ss.str().c_str()));
+            subElement = ss.str();
+        }
 
         Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
         std::vector<App::DocumentObject *> refs = pcAttach->Support.getValues();
+        std::vector<std::string> refnames = pcAttach->Support.getSubValues();
 
-        if (this->isButParFraChecked)
-        {
-            button->setText(tr("ParentFrame"));
-        }
-        else
-        {
-            button->setText(tr("Selecting..."));
-        }
-
-        isButParFraChecked = 1 - int(isButParFraChecked);
-    } // end onButtonParentFrame
+        refs.push_back(obj);
+        refnames.push_back(subElement.c_str());
+        pcAttach->Support.setValues(refs, refnames);
+        pcAttach->MapMode.setValue(Attacher::eMapMode::mmDeactivated);
+        updatePreview();
+    }
 
     void TaskOTAttacher::onCheckBoxUseCurrentTransform(bool toggled)
     {
@@ -153,23 +289,8 @@ namespace RobotGui
         if (!ViewProvider)
             return;
         this->use_current = ui->checkBoxUseCurrentTransform->checkState();
-
-        if(use_current) // If using current transformation option is enabled
-        {
-            // Make sure the parent frame is already selected
-            Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
-            std::vector<App::DocumentObject*> refs = pcAttach->Support.getValues();
-            if (!refs.empty())
-            {
-                App::PropertyPlacement* propla_parent = Base::freecad_dynamic_cast<App::PropertyPlacement>(refs.front()->getPropertyByName("Placement"));
-                App::PropertyPlacement* propla_child =  Base::freecad_dynamic_cast<App::PropertyPlacement>(
-                    ViewProvider->getObject()->getPropertyByName("Placement"));
-                Base::Placement offset = propla_parent->getValue().inverse() * propla_child->getValue(); //Inverse returns a copy
-                pcAttach->AttachmentOffset.setValue(offset);
-                updateAttachmentOffsetUI();
-            }
-        }
-        // else do nothing
+        if (this->use_current)
+            useCurrentTransform();
     }
 
     void TaskOTAttacher::onCheckBoxAttachmentActivate(bool toggled)
@@ -184,7 +305,7 @@ namespace RobotGui
         //----------Debug
         Base::Console().Message("Attaching mode: %d\n", mode);
         pcAttach->MapMode.setValue(mode);
-        // TODO: updatepreview
+        updatePreview();
     }
 
     void TaskOTAttacher::onSelectionChanged(const Gui::SelectionChanges &msg)
@@ -193,6 +314,10 @@ namespace RobotGui
             return;                                          // FIXME: User should be able to open task without a valid viewprovider?
         if (msg.Type == Gui::SelectionChanges::AddSelection) // Exclude other seleciton changes
         {
+            //----Debug
+            Base::Console().Message("In selecting mode: %d\n", (int)isButParFraChecked);
+            if (!isButParFraChecked) // If we are not in selecting mode, just do nothing for performance consideration
+                return;
             // Note: The validity checking has already been done in ReferenceSelection.cpp
             // FIXME: HOW??????
             Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>(); // FIXME: Data structure of Extension in DocumentObject???
@@ -233,15 +358,67 @@ namespace RobotGui
             try // FIXME: How do we know where exception can appear and where not????
             {
                 pcAttach->Support.setValues(refs, refnames);
-                pcAttach->MapMode.setValue(Attacher::eMapMode::mmObjectXY);
+                if (this->use_current) // If use current transform option is enabled, calculate the relative transform and update the attachment offset UI
+                    useCurrentTransform();
+                // pcAttach->MapMode.setValue(Attacher::eMapMode::mmObjectXY);
+                updatePreview(); //FIXME: Every time we change the actual attachment property, we should call this update method
             }
             catch (Base::Exception &e)
             {
                 ui->message->setText(QString::fromLatin1(e.what()));
                 ui->message->setStyleSheet(QString::fromLatin1("QLabel{color: red;}"));
             }
+
+            QLineEdit *line = ui->lineParentFrame;
+            if (line != NULL)
+            {
+                line->blockSignals(true);
+                line->setText(makeRefString(selObj, subname));
+                // line->setProperty("RefName", QByteArray(subname.c_str()));
+                line->blockSignals(false);
+            }
+
+        } // endif messageType==msg.Type == Gui::SelectionChanges::AddSelection
+    }     // end onSelectionChanged
+
+    void TaskOTAttacher::updateButtonParentFrame()
+    {
+        // update the button to indicate we are selecting
+        // !!!!and also to enable selection being registered to the task
+        if (!ViewProvider)
+            return;
+
+        QAbstractButton *button;
+        button = ui->buttonParentFrame;
+        // Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
+        // std::vector<App::DocumentObject *> refs = pcAttach->Support.getValues();
+
+        if (!isButParFraChecked)
+        {
+            button->setText(tr("ParentFrame"));
         }
-    } // end onSelectionChanged
+        else
+        {
+            button->setText(tr("Selecting..."));
+        }
+
+    } // end updateButtonParentFrame()
+
+    void TaskOTAttacher::useCurrentTransform()
+    {
+        // Make sure the parent frame is already selected
+        Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
+        std::vector<App::DocumentObject *> refs = pcAttach->Support.getValues();
+        if (!refs.empty())
+        {
+            App::PropertyPlacement *propla_parent = Base::freecad_dynamic_cast<App::PropertyPlacement>(refs.front()->getPropertyByName("Placement"));
+            App::PropertyPlacement *propla_child = Base::freecad_dynamic_cast<App::PropertyPlacement>(
+                ViewProvider->getObject()->getPropertyByName("Placement"));
+            Base::Placement offset = propla_parent->getValue().inverse() * propla_child->getValue(); // Inverse returns a copy
+            pcAttach->AttachmentOffset.setValue(offset);
+            updateAttachmentOffsetUI(); //Get called after altering the attachment
+        }
+    }
 
     void TaskOTAttacher::updateAttachmentOffsetUI()
     {
@@ -300,7 +477,7 @@ namespace RobotGui
         ui->attachmentOffsetYaw->blockSignals(bBlock);
         ui->attachmentOffsetPitch->blockSignals(bBlock);
         ui->attachmentOffsetRoll->blockSignals(bBlock);
-    }
+    } // End updateAttachmentOffsetUI()
 
     // FIXME: Think about where do we need to call this updatePreview to avoid unnecessary recompute
     bool TaskOTAttacher::updatePreview()
@@ -356,38 +533,6 @@ namespace RobotGui
         return attached;
     }
 
-    const QString makeRefString(const App::DocumentObject *obj, const std::string &sub)
-    {
-        if (obj == NULL)
-            return QObject::tr("No reference selected");
-
-        if (obj->getTypeId().isDerivedFrom(App::OriginFeature::getClassTypeId()) ||
-            obj->getTypeId().isDerivedFrom(Part::Datum::getClassTypeId()))
-            // App::Plane, Line or Datum feature
-            return QString::fromLatin1(obj->getNameInDocument());
-
-        if ((sub.size() > 4) && (sub.substr(0, 4) == "Face"))
-        {
-            int subId = std::atoi(&sub[4]);
-            return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Face") + QString::number(subId);
-        }
-        else if ((sub.size() > 4) && (sub.substr(0, 4) == "Edge"))
-        {
-            int subId = std::atoi(&sub[4]);
-            return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Edge") + QString::number(subId);
-        }
-        else if ((sub.size() > 6) && (sub.substr(0, 6) == "Vertex"))
-        {
-            int subId = std::atoi(&sub[6]);
-            return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Vertex") + QString::number(subId);
-        }
-        else
-        {
-            // something else that face/edge/vertex. Can be empty string.
-            return QString::fromLatin1(obj->getNameInDocument()) + (sub.length() > 0 ? QString::fromLatin1(":") : QString()) + QString::fromLatin1(sub.c_str());
-        }
-    } // end makeRefString
-
     void TaskOTAttacher::makeRefStrings(std::vector<QString> &refstrings, std::vector<std::string> &refnames)
     {
         Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
@@ -403,6 +548,21 @@ namespace RobotGui
             refnames.push_back(""); // FIXME: WHY?????
         }
     } // end makeRefStrings
+
+    void TaskOTAttacher::objectDeleted(const Gui::ViewProviderDocumentObject &view)
+    {
+        if (ViewProvider == &view)
+        {
+            ViewProvider = nullptr;
+            this->setDisabled(true);
+        }
+    }
+
+    void TaskOTAttacher::documentDeleted(const Gui::Document &)
+    {
+        ViewProvider = nullptr;
+        this->setDisabled(true);
+    }
 
     TaskOTAttacher::~TaskOTAttacher() {}
 }
