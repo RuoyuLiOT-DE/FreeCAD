@@ -31,13 +31,13 @@ namespace RobotGui
         ///@param text
         ///
         void onLineParentFrame(const QString &text);
-        // void onAttachmentOffsetChanged(double, int idx); // Reused by individual property changing spin box
-        // void onAttachmentOffsetXChanged(double);
-        // void onAttachmentOffsetYChanged(double);
-        // void onAttachmentOffsetZChanged(double);
-        // void onAttachmentOffsetYawChanged(double);
-        // void onAttachmentOffsetPitchChanged(double);
-        // void onAttachmentOffsetRollChanged(double);
+        void onAttachmentOffsetChanged(int idx); // Reused by individual property changing spin box
+        void onAttachmentOffsetXChanged(double);
+        void onAttachmentOffsetYChanged(double);
+        void onAttachmentOffsetZChanged(double);
+        void onAttachmentOffsetYawChanged(double);
+        void onAttachmentOffsetPitchChanged(double);
+        void onAttachmentOffsetRollChanged(double);
 
         ///@brief Configure whether use current transformation as attachment offset
         ///
@@ -52,6 +52,10 @@ namespace RobotGui
         void onCheckBoxAttachmentActivate(const bool toggled);
 
     private:
+
+        ///@brief Update the text displayed on the button according to the checked state of the button 
+        ///
+        ///
         void updateButtonParentFrame();
 
         ///@brief updatePreview: calculate attachment, update 3d view, update status message (status mesage is on top of this task panel)
@@ -66,11 +70,14 @@ namespace RobotGui
         ///
         void onSelectionChanged(const Gui::SelectionChanges &msg) override;
 
-        ///@brief Update the attachment offset ui from model
+        ///@brief Update the attachment offset ui using parameter from model 
         ///
         ///
         void updateAttachmentOffsetUI();
 
+        ///@brief Use the current transform as the default relative transformation from parent to the child 
+        ///
+        ///
         void useCurrentTransform();
 
         ///@brief

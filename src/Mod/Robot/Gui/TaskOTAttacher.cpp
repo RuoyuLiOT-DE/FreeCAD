@@ -12,41 +12,41 @@
 #include <Mod/Part/Gui/AttacherTexts.h>
 #include <Mod/Part/App/Attacher.h> // For dealing with translatable mode text
 
-#include <Gui/Application.h> 
+#include <Gui/Application.h>
 #include "ui_TaskOTAttacher.h"
 #include "TaskOTAttacher.h"
 
 const QString makeRefString(const App::DocumentObject *obj, const std::string &sub)
+{
+    if (obj == NULL)
+        return QObject::tr("No reference selected");
+
+    if (obj->getTypeId().isDerivedFrom(App::OriginFeature::getClassTypeId()) ||
+        obj->getTypeId().isDerivedFrom(Part::Datum::getClassTypeId()))
+        // App::Plane, Line or Datum feature
+        return QString::fromLatin1(obj->getNameInDocument());
+
+    if ((sub.size() > 4) && (sub.substr(0, 4) == "Face"))
     {
-        if (obj == NULL)
-            return QObject::tr("No reference selected");
-
-        if (obj->getTypeId().isDerivedFrom(App::OriginFeature::getClassTypeId()) ||
-            obj->getTypeId().isDerivedFrom(Part::Datum::getClassTypeId()))
-            // App::Plane, Line or Datum feature
-            return QString::fromLatin1(obj->getNameInDocument());
-
-        if ((sub.size() > 4) && (sub.substr(0, 4) == "Face"))
-        {
-            int subId = std::atoi(&sub[4]);
-            return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Face") + QString::number(subId);
-        }
-        else if ((sub.size() > 4) && (sub.substr(0, 4) == "Edge"))
-        {
-            int subId = std::atoi(&sub[4]);
-            return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Edge") + QString::number(subId);
-        }
-        else if ((sub.size() > 6) && (sub.substr(0, 6) == "Vertex"))
-        {
-            int subId = std::atoi(&sub[6]);
-            return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Vertex") + QString::number(subId);
-        }
-        else
-        {
-            // something else that face/edge/vertex. Can be empty string.
-            return QString::fromLatin1(obj->getNameInDocument()) + (sub.length() > 0 ? QString::fromLatin1(":") : QString()) + QString::fromLatin1(sub.c_str());
-        }
-    } // end makeRefString
+        int subId = std::atoi(&sub[4]);
+        return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Face") + QString::number(subId);
+    }
+    else if ((sub.size() > 4) && (sub.substr(0, 4) == "Edge"))
+    {
+        int subId = std::atoi(&sub[4]);
+        return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Edge") + QString::number(subId);
+    }
+    else if ((sub.size() > 6) && (sub.substr(0, 6) == "Vertex"))
+    {
+        int subId = std::atoi(&sub[6]);
+        return QString::fromLatin1(obj->getNameInDocument()) + QString::fromLatin1(":") + QObject::tr("Vertex") + QString::number(subId);
+    }
+    else
+    {
+        // something else that face/edge/vertex. Can be empty string.
+        return QString::fromLatin1(obj->getNameInDocument()) + (sub.length() > 0 ? QString::fromLatin1(":") : QString()) + QString::fromLatin1(sub.c_str());
+    }
+} // end makeRefString
 namespace RobotGui
 {
     TaskOTAttacher::TaskOTAttacher(Gui::ViewProviderDocumentObject *ViewProvider, QWidget *parent,
@@ -119,7 +119,7 @@ namespace RobotGui
         // and deactivate the attachement
         ui->checkBoxAttachmentActivate->setChecked((bool)pcAttach->MapMode.getValue()); // mmDeactivated=0, mmObjectXY=2 FIXME: currently we only use these two modes
         ui->checkBoxUseCurrentTransform->setChecked(this->use_current);
-        if (this->use_current)     // If use current transform as attachment offset
+        if (this->use_current) // If use current transform as attachment offset
             useCurrentTransform();
 
         // FIXME: learn more about the freecad gui elements Gui::prefQuantitySpinBox and Gui::QuantitySpinBox
@@ -193,7 +193,7 @@ namespace RobotGui
             pcAttach->Support.setValues(newrefs, newrefnames); // Set empty to remove support
             pcAttach->MapMode.setValue(Attacher::eMapMode::mmDeactivated);
             pcAttach->AttachmentOffset.setValue(Base::Placement::Placement()); // Restore the transform
-            
+
             updateAttachmentOffsetUI();
             updatePreview(); // get called after altering the attachment
 
@@ -281,7 +281,73 @@ namespace RobotGui
         pcAttach->Support.setValues(refs, refnames);
         pcAttach->MapMode.setValue(Attacher::eMapMode::mmDeactivated);
         updatePreview();
-    }
+    } // end onLineParentFrame
+
+    void TaskOTAttacher::onAttachmentOffsetChanged(int idx)
+    {
+        if (!ViewProvider)
+            return;
+
+        Part::AttachExtension *pcAttach = ViewProvider->getObject()->getExtensionByType<Part::AttachExtension>();
+        Base::Placement pl = pcAttach->AttachmentOffset.getValue();
+
+        Base::Vector3d pos = pl.getPosition();
+        if (idx == 0)
+        {
+            pos.x = ui->attachmentOffsetX->value().getValueAs(Base::Quantity::MilliMetre);
+        }
+        if (idx == 1)
+        {
+            pos.y = ui->attachmentOffsetY->value().getValueAs(Base::Quantity::MilliMetre);
+        }
+        if (idx == 2)
+        {
+            pos.z = ui->attachmentOffsetZ->value().getValueAs(Base::Quantity::MilliMetre);
+        }
+        if (idx >= 0 && idx <= 2)
+        {
+            pl.setPosition(pos);
+        }
+
+        if (idx >= 3 && idx <= 5)
+        {
+            double yaw, pitch, roll;
+            yaw = ui->attachmentOffsetYaw->value().getValueAs(Base::Quantity::Degree);
+            pitch = ui->attachmentOffsetPitch->value().getValueAs(Base::Quantity::Degree);
+            roll = ui->attachmentOffsetRoll->value().getValueAs(Base::Quantity::Degree);
+            Base::Rotation rot;
+            rot.setYawPitchRoll(yaw, pitch, roll);
+            pl.setRotation(rot);
+        }
+
+        pcAttach->AttachmentOffset.setValue(pl);
+        updatePreview();
+    } // end onAttachmentOffsetChanged
+
+    void TaskOTAttacher::onAttachmentOffsetXChanged(double)
+    {
+        onAttachmentOffsetChanged(0);
+    } //end onAttachmentOffsetXChanged
+    void TaskOTAttacher::onAttachmentOffsetYChanged(double)
+    {
+        onAttachmentOffsetChanged(1);
+    } //end onAttachmentOffsetYChanged
+    void TaskOTAttacher::onAttachmentOffsetZChanged(double)
+    {
+        onAttachmentOffsetChanged(2);
+    } //end onAttachmentOffsetZChanged
+    void TaskOTAttacher::onAttachmentOffsetYawChanged(double)
+    {
+        onAttachmentOffsetChanged(3);
+    } //end onAttachmentOffsetYawChanged
+    void TaskOTAttacher::onAttachmentOffsetPitchChanged(double)
+    {
+        onAttachmentOffsetChanged(4);
+    } //end onAttachmentOffsetPitchChanged
+    void TaskOTAttacher::onAttachmentOffsetRollChanged(double)
+    {
+        onAttachmentOffsetChanged(5);
+    } //end onAttachmentOffsetRollChanged
 
     void TaskOTAttacher::onCheckBoxUseCurrentTransform(bool toggled)
     {
@@ -361,7 +427,7 @@ namespace RobotGui
                 if (this->use_current) // If use current transform option is enabled, calculate the relative transform and update the attachment offset UI
                     useCurrentTransform();
                 // pcAttach->MapMode.setValue(Attacher::eMapMode::mmObjectXY);
-                updatePreview(); //FIXME: Every time we change the actual attachment property, we should call this update method
+                updatePreview(); // FIXME: Every time we change the actual attachment property, we should call this update method
             }
             catch (Base::Exception &e)
             {
@@ -416,7 +482,7 @@ namespace RobotGui
                 ViewProvider->getObject()->getPropertyByName("Placement"));
             Base::Placement offset = propla_parent->getValue().inverse() * propla_child->getValue(); // Inverse returns a copy
             pcAttach->AttachmentOffset.setValue(offset);
-            updateAttachmentOffsetUI(); //Get called after altering the attachment
+            updateAttachmentOffsetUI(); // Get called after altering the attachment
         }
     }
 
