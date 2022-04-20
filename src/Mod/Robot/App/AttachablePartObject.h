@@ -9,6 +9,10 @@ class RobotExport AttachablePartObject : public Part::Feature, public Part::Atta
 
     public:
     AttachablePartObject();
+
+    // const char* getViewProviderName(void) const override {
+    //     return "RobotGui::ViewProviderAttachablePartObject";
+    // }
     virtual ~AttachablePartObject();
 };
 

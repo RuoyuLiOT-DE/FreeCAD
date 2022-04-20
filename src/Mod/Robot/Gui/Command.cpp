@@ -372,7 +372,6 @@ void CmdEditAttachment::activated(int)
     auto selObjs = Gui::Selection().getSelection();
     if (selObjs.empty())
         throw Base::RuntimeError("Nothing selected");
-
     Gui::ViewProviderDocumentObject *vp = static_cast<Gui::ViewProviderDocumentObject *>(
         Gui::Application::Instance->getViewProvider(
             selObjs.front().pObject));

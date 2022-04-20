@@ -102,6 +102,8 @@ SET(RobotGui_SRCS_ViewProvider
     ViewProviderTrajectoryCompound.h
     ViewProviderTrajectoryDressUp.cpp
     ViewProviderTrajectoryDressUp.h
+    ViewProviderAttachablePartObject.cpp
+    ViewProviderAttachablePartObject.h
     )
 SOURCE_GROUP("ViewProvider" FILES ${RobotGui_SRCS_ViewProvider})
 

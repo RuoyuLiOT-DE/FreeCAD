@@ -38,6 +38,7 @@
 #include "ViewProviderEdge2TracObject.h"
 #include "ViewProviderTrajectoryDressUp.h"
 #include "ViewProviderTrajectoryCompound.h"
+#include "ViewProviderAttachablePartObject.h"
 #include "Workbench.h"
 
 // use a different name to CreateCommand()
@@ -118,6 +119,7 @@ PyMOD_INIT_FUNC(RobotGui)
     RobotGui::ViewProviderEdge2TracObject    ::init();
     RobotGui::ViewProviderTrajectoryCompound ::init();
     RobotGui::ViewProviderTrajectoryDressUp  ::init();
+    RobotGui::ViewProviderAttachablePartObject ::init();
 
      // add resources and reloads the translators
     loadRobotResource();
