@@ -42,9 +42,11 @@
 #include "TaskDlgSimulate.h"
 
 #include <Mod/Robot/App/AttachablePartObject.h> // To use ot-attachable object
-// #include <Mod/PartDesign/App/DatumCS.h> // To use the coordinate system defined in partdesgin module ?
+#include <Mod/PartDesign/App/DatumCS.h>         // To use the coordinate system defined in partdesgin module
 #include "TaskDlgOTAttacher.h"
 #include <Mod/Part/Gui/ViewProvider.h>
+
+#include <BRepBuilderAPI_MakeVertex.hxx>
 
 using namespace std;
 using namespace RobotGui;
@@ -279,7 +281,7 @@ CmdRobotImportAttachable::CmdRobotImportAttachable()
     sToolTipText = QT_TR_NOOP("Import an attachalbe object...");
     sWhatsThis = "Robot_ImportAttachable";
     sStatusTip = sToolTipText;
-    sPixmap = "Robot_CreateRobot";
+    sPixmap = "Robot_ImportAttachable";
 }
 
 void CmdRobotImportAttachable::activated(int)
@@ -291,6 +293,8 @@ void CmdRobotImportAttachable::activated(int)
     Gui::CommandManager &mgr = Gui::Application::Instance->commandManager();
     mgr.runCommandByName("Std_Import");
     App::DocumentObject *pPartDocumentObject = App::GetApplication().getActiveDocument()->getActiveObject();
+    //----Debug
+    Base::Console().Message("Internal name of imported part, %s\n", pPartDocumentObject->getNameInDocument());
 
     if (!pPartDocumentObject)
     {
@@ -301,18 +305,19 @@ void CmdRobotImportAttachable::activated(int)
     doCommand(Doc, "App.activeDocument().addObject(\"Robot::AttachablePartObject\",\"%s\")", FeatName.c_str());
     updateActive(); // FIXME: When do we need to upadte the change manually?
 
-    // TODO: Correct way of checking whether an object is imported successfully?
+    // FIXME: Correct way of checking whether an object is imported successfully?
     App::DocumentObject *pDocumentObject = App::GetApplication().getActiveDocument()->getActiveObject();
     if (!pDocumentObject)
     {
         Base::Console().Message("Using invalid DocumentObject");
         return;
     }
-    // TODO: What is the idea behind this down casting besides checking the type?
+    // FIXME: What is the idea behind this down casting besides checking the type?
     pAttachable = static_cast<Robot::AttachablePartObject *>(pDocumentObject);
     if (pAttachable)
         pAttachable->Shape.setValue(Part::Feature::getTopoShape(pPartDocumentObject));
-    return;
+
+    App::GetApplication().getActiveDocument()->removeObject(pPartDocumentObject->getNameInDocument());
 }
 
 bool CmdRobotImportAttachable::isActive(void)
@@ -336,12 +341,35 @@ CmdCreateCoordSys::CmdCreateCoordSys()
     sPixmap = "Robot_CreateCoordSys";
 }
 
-// FIXME:
+// FIXME: JUST FOR PROTOTYPING
 void CmdCreateCoordSys::activated(int)
 {
-    // PartDesign::CoordinateSystem* pCordSys = 0;
+    Gui::CommandManager &mgr = Gui::Application::Instance->commandManager();
+    App::DocumentObject *pObj = App::GetApplication().getActiveDocument()->getObject("WCS");
+    if (!pObj)
+    {
+        Part::Feature *pWCS = 0;
+        doCommand(Doc, "App.activeDocument().addObject(\"Part::Feature\", \"%s\")", "WCS");
+        doCommand(Command::Gui, "Gui.ActiveDocument.ActiveView.setAxisCross(True)");
+        pObj = App::GetApplication().getActiveDocument()->getObject("WCS");
+        pWCS = static_cast<Part::Feature *>(pObj);
+        if (!pWCS)
+            Base::RuntimeError("Error casting WCS to Part::Feature\n");
+        BRepBuilderAPI_MakeVertex builder(gp_Pnt(0,0,0));
+        if (!builder.IsDone())
+            Base::RuntimeError("Error creating shape of wcs\n");
+        Part::TopoShape tshape(builder.Shape());
+        tshape.setPlacement(pWCS->Placement.getValue());
+        pWCS->Shape.setValue(tshape);
+    }
+    PartDesign::CoordinateSystem *pCordSys = 0;
     std::string ObjName = getUniqueObjectName("Frame"); // If this is not the first object with this name it got a number 00x append at the end of this name
     doCommand(Doc, "App.activeDocument().addObject(\"PartDesign::CoordinateSystem\",\"%s\")", ObjName.c_str());
+    pCordSys = static_cast<PartDesign::CoordinateSystem *>(App::GetApplication().getActiveDocument()->getObject(ObjName.c_str()));
+    if (!pCordSys || !pObj)
+    {
+        Base::RuntimeError("Coordinate system created failed or world base not exist");
+    }
 }
 
 bool CmdCreateCoordSys::isActive(void)
@@ -358,8 +386,8 @@ CmdEditAttachment::CmdEditAttachment()
 {
     sAppModule = "Robot";
     sGroup = QT_TR_NOOP("Robot");
-    sMenuText = QT_TR_NOOP("+Coordinater System");
-    sToolTipText = QT_TR_NOOP("Add a Coordinater System ");
+    sMenuText = QT_TR_NOOP("Edit attachment property");
+    sToolTipText = QT_TR_NOOP("Edit attachment property");
     sWhatsThis = "Robot_EditAttachment";
     sStatusTip = sToolTipText;
     sPixmap = "Robot_EditAttachment";

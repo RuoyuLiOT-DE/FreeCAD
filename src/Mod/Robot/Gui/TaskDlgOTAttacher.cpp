@@ -8,6 +8,7 @@
 #include <Mod/Part/App/AttachExtension.h>
 #include <Gui/CommandT.h>
 #include <QMessageBox>
+#include <Gui/Command.h>
 
 namespace RobotGui
 {
@@ -68,6 +69,7 @@ namespace RobotGui
             Gui::cmdAppObject(obj, "recompute()");
 
             Gui::cmdGuiDocument(obj, "resetEdit()"); // FIXME:Why this does not erase the change?because the recompute()?
+            Gui::Command::doCommand(Gui::Command::Doc, "App.activeDocument().recompute()");
             document->commitCommand();
         }
         catch (const Base::Exception &e)
