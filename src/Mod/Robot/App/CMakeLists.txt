@@ -73,6 +73,10 @@ SET(Robot_SRCS
     Simulation.h
     Waypoint.cpp
     Waypoint.h
+    # OTCoordinateSystemObject.cpp
+    # OTCoordinateSystemObject.h
+    OTAttachableObject.cpp
+    OTAttachableObject.h
     ${Mod_SRCS}
     ${Python_SRCS}
 )

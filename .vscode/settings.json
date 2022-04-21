@@ -97,6 +97,19 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp",
-        "qobject": "cpp"
+        "qobject": "cpp",
+        "*.lxx": "cpp",
+        "*.ipp": "cpp",
+        "cholesky": "cpp",
+        "eigenvalues": "cpp",
+        "geometry": "cpp",
+        "householder": "cpp",
+        "jacobi": "cpp",
+        "lu": "cpp",
+        "qr": "cpp",
+        "svd": "cpp",
+        "*.txx": "cpp",
+        "core": "cpp",
+        "qaction": "cpp"
     }
 }
