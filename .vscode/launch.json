@@ -13,23 +13,6 @@
             "cwd": "C:\\Dev\\Framework\\FreeCAD-dev\\out\\install\\config_msvc2019_x64_debug\\bin\\",
             "console": "internalConsole",
             "preLaunchTask": "msvc-cmake-build"
-        },
-        {
-            "name": "RioD-msvc-cmake-debug",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "C:\\Dev\\Install\\RioD019\\bin\\RioD.exe",
-            "stopAtEntry": false,
-            // "cwd": "C:\\Dev\\Framework\\Robwork\\RobworkStudio\\bin\\relwithdebinfo",
-            "cwd": "C:\\Dev\\Install\\RioD019\\bin\\",
-            "environment": [
-                {
-                    "name": "Path",
-                    "value": "${env:PATH};C:\\Dev\\Install\\RioD019\\bin\\isolated_dlls"
-                }
-            ],
-            "console": "internalConsole",
-            "preLaunchTask": "msvc-cmake-build"
         }
     ]
 }

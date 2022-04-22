@@ -42,7 +42,6 @@
 #include "TaskDlgSimulate.h"
 
 #include <Mod/Robot/App/AttachablePartObject.h> // To use ot-attachable object
-#include <Mod/PartDesign/App/DatumCS.h>         // To use the coordinate system defined in partdesgin module
 #include <Mod/Part/Gui/ViewProvider.h>
 #include <BRepBuilderAPI_MakeVertex.hxx> //For axis cross origin
 

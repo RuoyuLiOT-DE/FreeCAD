@@ -152,7 +152,7 @@ void ViewProviderOTAttachableObject::setDisplayMode(const char *ModeName)
     ViewProviderGeometryObject::setDisplayMode(ModeName);
 }
 
-// FIXME: Deleted FC code
+// FIXME: Deleted FC Code
 /* std::string ViewProviderOTAttachableObject::getElement(const SoDetail* detail) const
 {
     if (detail) {
@@ -311,8 +311,7 @@ void ViewProviderOTAttachableObject::unsetEdit(int ModNum)
     }
 }
 
-// FIXME: Deleted FC code regarding the view auto adjustment feature, maybe useful later
-/* void ViewProviderOTAttachableObject::updateExtents()
+void ViewProviderOTAttachableObject::updateExtents()
 {
     setExtents(getRelevantBoundBox());
 }
@@ -327,87 +326,89 @@ void ViewProviderOTAttachableObject::setExtents(const SbBox3f &bbox)
 
 SbBox3f ViewProviderOTAttachableObject::getRelevantBoundBox() const
 {
-    std::vector<App::DocumentObject *> objs;
+    // FIXME: Deleted FC code
+    /*     std::vector<App::DocumentObject *> objs;
 
-    // Probe body first
-    PartDesign::Body *body = PartDesign::Body::findBodyOf(this->getObject());
-    if (body)
-    {
-        objs = body->getFullModel();
-    }
-    else
-    {
-        // Probe if we belongs to some group
-        App::DocumentObject *group = App::DocumentObjectGroup::getGroupOfObject(this->getObject());
-
-        if (group)
+        // Probe body first
+        PartDesign::Body *body = PartDesign::Body::findBodyOf(this->getObject());
+        if (body)
         {
-            auto *ext = group->getExtensionByType<App::GroupExtension>();
-            if (ext)
-                objs = ext->getObjects();
+            objs = body->getFullModel();
         }
         else
         {
-            // Fallback to whole document
-            objs = this->getObject()->getDocument()->getObjects();
+            // Probe if we belongs to some group
+            App::DocumentObject *group = App::DocumentObjectGroup::getGroupOfObject(this->getObject());
+
+            if (group)
+            {
+                auto *ext = group->getExtensionByType<App::GroupExtension>();
+                if (ext)
+                    objs = ext->getObjects();
+            }
+            else
+            {
+                // Fallback to whole document
+                objs = this->getObject()->getDocument()->getObjects();
+            }
         }
-    }
 
-    Gui::View3DInventor *view = dynamic_cast<Gui::View3DInventor *>(this->getActiveView());
-    if (view)
-    {
-        Gui::View3DInventorViewer *viewer = view->getViewer();
-        SoGetBoundingBoxAction bboxAction(viewer->getSoRenderManager()->getViewportRegion());
-        SbBox3f bbox = getRelevantBoundBox(bboxAction, objs);
-
-        if (bbox.getVolume() < Precision::Confusion())
+        Gui::View3DInventor *view = dynamic_cast<Gui::View3DInventor *>(this->getActiveView());
+        if (view)
         {
-            bbox.extendBy(defaultBoundBox());
+            Gui::View3DInventorViewer *viewer = view->getViewer();
+            SoGetBoundingBoxAction bboxAction(viewer->getSoRenderManager()->getViewportRegion());
+            SbBox3f bbox = getRelevantBoundBox(bboxAction, objs);
+
+            if (bbox.getVolume() < Precision::Confusion())
+            {
+                bbox.extendBy(defaultBoundBox());
+            }
+            return bbox;
         }
-        return bbox;
-    }
-    else
-    {
-        return defaultBoundBox();
-    }
+        else
+        {
+            return defaultBoundBox();
+        } */
+    return defaultBoundBox();
 }
 
 SbBox3f ViewProviderOTAttachableObject::getRelevantBoundBox(
     SoGetBoundingBoxAction &bboxAction, const std::vector<App::DocumentObject *> &objs)
 {
     SbBox3f bbox = defaultBoundBox();
-
-    // Adds the bbox of given feature to the output
-    for (auto obj : objs)
-    {
-        ViewProvider *vp = Gui::Application::Instance->getViewProvider(obj);
-        if (!vp)
+    // FIXME: deleted FC Code
+    /*     // Adds the bbox of given feature to the output
+        for (auto obj : objs)
         {
-            continue;
-        }
-        if (!vp->isVisible())
-        {
-            continue;
-        }
-
-        if (obj->isDerivedFrom(Part::Datum::getClassTypeId()))
-        {
-            // Treat datums only as their basepoint
-            // I hope it's ok to take FreeCAD's point here
-            Base::Vector3d basePoint = static_cast<Part::Datum *>(obj)->getBasePoint();
-            bbox.extendBy(SbVec3f(basePoint.x, basePoint.y, basePoint.z));
-        }
-        else
-        {
-            bboxAction.apply(vp->getRoot());
-            SbBox3f obj_bbox = bboxAction.getBoundingBox();
-
-            if (obj_bbox.getVolume() < Precision::Infinite())
+            ViewProvider *vp = Gui::Application::Instance->getViewProvider(obj);
+            if (!vp)
             {
-                bbox.extendBy(obj_bbox);
+                continue;
             }
-        }
-    }
+            if (!vp->isVisible())
+            {
+                continue;
+            }
+
+            if (obj->isDerivedFrom(Part::Datum::getClassTypeId()))
+            {
+                // Treat datums only as their basepoint
+                // I hope it's ok to take FreeCAD's point here
+                Base::Vector3d basePoint = static_cast<Part::Datum *>(obj)->getBasePoint();
+                bbox.extendBy(SbVec3f(basePoint.x, basePoint.y, basePoint.z));
+            }
+            else
+            {
+                bboxAction.apply(vp->getRoot());
+                SbBox3f obj_bbox = bboxAction.getBoundingBox();
+
+                if (obj_bbox.getVolume() < Precision::Infinite())
+                {
+                    bbox.extendBy(obj_bbox);
+                }
+            }
+        } */
 
     // TODO: shrink bbox when all other elements are too small
     return bbox;
@@ -418,7 +419,7 @@ SbBox3f ViewProviderOTAttachableObject::defaultBoundBox()
     return SbBox3f(-defaultSize, -defaultSize, -defaultSize,
                    defaultSize, defaultSize, defaultSize);
 }
- */
+
 bool ViewProviderOTAttachableObject::isPickable()
 {
 

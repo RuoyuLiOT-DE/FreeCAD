@@ -1,6 +1,5 @@
 #include "PreCompiled.h"
 
-#include "ViewProviderOTCoordinateSystemObject.h"
 #include <App/Application.h>
 #include <Inventor/nodes/SoCoordinate3.h>
 #include <Inventor/nodes/SoFont.h>
@@ -11,12 +10,13 @@
 #include <Inventor/nodes/SoDrawStyle.h>
 #include <Inventor/nodes/SoText2.h>
 #include <Inventor/details/SoLineDetail.h>
-#include <Mod/Part/Gui/SoBrepEdgeSet.h>
 #include <Gui/Inventor/SoAutoZoomTranslation.h>
+#include <Mod/Part/Gui/SoBrepEdgeSet.h>
 
+#include "ViewProviderOTCoordinateSystemObject.h"
 using namespace RobotGui;
 
-PROPERTY_SOURCE(RobotGui::ViewProviderOTCoordinateSystemObject, PartDesignGui::ViewProviderDatum)//RobotGui::ViewProviderOTAttachableObject)
+PROPERTY_SOURCE(RobotGui::ViewProviderOTCoordinateSystemObject, RobotGui::ViewProviderOTAttachableObject)
 
 // Reuse the FreeCAD constsraints on zoom and font
 const App::PropertyFloatConstraint::Constraints ZoomConstraint = {0.0, DBL_MAX, 0.2};
@@ -81,7 +81,7 @@ ViewProviderOTCoordinateSystemObject::~ViewProviderOTCoordinateSystemObject()
 
 void ViewProviderOTCoordinateSystemObject::attach(App::DocumentObject *obj)
 {
-    ViewProviderGeometryObject::attach(obj);
+    ViewProviderOTAttachableObject::attach(obj);
     
     SoMaterial *material = new SoMaterial();
     material->diffuseColor.setNum(4);
@@ -98,9 +98,8 @@ void ViewProviderOTCoordinateSystemObject::attach(App::DocumentObject *obj)
     getShapeRoot()->addChild(material);
 
     coord->point.setNum(4);
-
-    // FIXME: FC code use method from Datum
-    //  ViewProviderDatum::setExtents(defaultBoundBox());
+    
+    // ViewProviderDatum::setExtents(defaultBoundBox());
 
     getShapeRoot()->addChild(coord);
 
@@ -178,11 +177,11 @@ void ViewProviderOTCoordinateSystemObject::setupLabels()
 void ViewProviderOTCoordinateSystemObject::updateData(const App::Property *prop)
 {
     //FIXME: belong to auto resize logic
-    // if (strcmp(prop->getName(), "Placement") == 0)
-    //     updateExtents();
+    if (strcmp(prop->getName(), "Placement") == 0)
+        updateExtents();
 
-    // ViewProviderOTAttachableObject::updateData(prop);
-    ViewProviderDatum::updateData(prop);
+    ViewProviderOTAttachableObject::updateData(prop);
+    // ViewProviderDatum::updateData(prop);
 }
 
 void ViewProviderOTCoordinateSystemObject::onChanged(const App::Property *prop)
@@ -194,13 +193,13 @@ void ViewProviderOTCoordinateSystemObject::onChanged(const App::Property *prop)
         else if (prop == &Zoom)
         {
             autoZoom->scaleFactor.setValue(Zoom.getValue());
-            // updateExtents(); //FIXME: resize
+            updateExtents(); //FIXME: resize
         }
         else if (prop == &FontSize)
             font->size = FontSize.getValue();
     }
-    // ViewProviderOTAttachableObject::onChanged(prop);
-    ViewProviderDatum::onChanged(prop);
+    ViewProviderOTAttachableObject::onChanged(prop);
+    // ViewProviderDatum::onChanged(prop);
 }
 
 void ViewProviderOTCoordinateSystemObject::setExtents(Base::BoundBox3d bbox)

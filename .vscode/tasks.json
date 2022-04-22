@@ -8,30 +8,6 @@
             "type": "cmake",
             "command": "build",
             "problemMatcher": []
-        },
-        {
-            "label": "build&run",
-            "type": "process",
-            "dependsOn":["msvc-cmake-build"],
-            "command": "RioD.exe",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "options": {
-                "cwd": "C:\\Dev\\Install\\RioD019\\bin",
-                "env": {
-                    "Path": "${env:PATH};C:\\Dev\\Install\\RioD019\\bin\\isolated_dlls"
-                }
-            },
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": false,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": false
-            }
         }
     ]
 }
