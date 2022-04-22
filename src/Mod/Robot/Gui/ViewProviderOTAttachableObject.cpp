@@ -241,7 +241,7 @@ bool ViewProviderOTAttachableObject::setEdit(int ModNum)
         Gui::Selection().clearSelection();
 
         // FIXME: We need to ensure at this time all the needed module should be imported, but in our case does it have to be the PartDesignWorkbench?
-        //  oldWb = Gui::Command::assureWorkbench("PartDesignWorkbench");
+        oldWb = Gui::Command::assureWorkbench("PartDesignWorkbench");
 
         // When double-clicking on the item for this datum feature the
         // object unsets and sets its edit mode without closing
@@ -292,6 +292,7 @@ bool ViewProviderOTAttachableObject::doubleClicked(void)
     }
     return PartDesignGui::setEdit(pcObject, activeBody);
     */
+    return true;
 }
 
 void ViewProviderOTAttachableObject::unsetEdit(int ModNum)
@@ -310,7 +311,7 @@ void ViewProviderOTAttachableObject::unsetEdit(int ModNum)
     }
 }
 
-//FIXME: Deleted FC code regarding the view auto adjustment feature, maybe useful later
+// FIXME: Deleted FC code regarding the view auto adjustment feature, maybe useful later
 /* void ViewProviderOTAttachableObject::updateExtents()
 {
     setExtents(getRelevantBoundBox());

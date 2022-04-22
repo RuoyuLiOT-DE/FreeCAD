@@ -23,9 +23,7 @@ link_directories(${OCC_LIBRARY_DIR})
 set(RobotGui_LIBS
     Robot
     FreeCADGui
-    PartGui
-    # PartDesign
-    # PartDesignGui
+    PartDesignGui
 )
 
 if(BUILD_QT5)
@@ -104,10 +102,10 @@ SET(RobotGui_SRCS_ViewProvider
     ViewProviderTrajectoryDressUp.h
     ViewProviderAttachablePartObject.cpp
     ViewProviderAttachablePartObject.h
-    # ViewProviderOTCoordinateSystem.cpp
-    # ViewProviderOTCoordinateSystem.h
     ViewProviderOTAttachableObject.cpp
     ViewProviderOTAttachableObject.h
+    ViewProviderOTCoordinateSystemObject.cpp
+    ViewProviderOTCoordinateSystemObject.h
     )
 SOURCE_GROUP("ViewProvider" FILES ${RobotGui_SRCS_ViewProvider})
 

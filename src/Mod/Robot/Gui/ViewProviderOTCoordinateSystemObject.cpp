@@ -1,17 +1,22 @@
 #include "PreCompiled.h"
 
-#include "ViewProviderOTCoordinateSystem.h"
+#include "ViewProviderOTCoordinateSystemObject.h"
 #include <App/Application.h>
-#include <Gui/Inventor/SoAutoZoomTranslation.h>
 #include <Inventor/nodes/SoCoordinate3.h>
 #include <Inventor/nodes/SoFont.h>
 #include <Inventor/nodes/SoSwitch.h>
 #include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/nodes/SoMaterialBinding.h>
+#include <Inventor/nodes/SoSeparator.h>
+#include <Inventor/nodes/SoDrawStyle.h>
+#include <Inventor/nodes/SoText2.h>
+#include <Inventor/details/SoLineDetail.h>
+#include <Mod/Part/Gui/SoBrepEdgeSet.h>
+#include <Gui/Inventor/SoAutoZoomTranslation.h>
 
 using namespace RobotGui;
 
-PROPERTY_SOURCE(RobotGui::ViewProviderOTCoordinateSystemObject, Gui::ViewProviderGeometryObject)
+PROPERTY_SOURCE(RobotGui::ViewProviderOTCoordinateSystemObject, PartDesignGui::ViewProviderDatum)//RobotGui::ViewProviderOTAttachableObject)
 
 // Reuse the FreeCAD constsraints on zoom and font
 const App::PropertyFloatConstraint::Constraints ZoomConstraint = {0.0, DBL_MAX, 0.2};
@@ -19,7 +24,6 @@ const App::PropertyIntegerConstraint::Constraints FontConstraint = {1, INT_MAX, 
 
 ViewProviderOTCoordinateSystemObject::ViewProviderOTCoordinateSystemObject()
 {
-    PartGui::ViewProviderAttachExtension::initExtension(this);
 
     /*FIXME:Constructor of ViewProviderDatumCS, do we need all of them?*/
     // Set constraints properties
@@ -78,28 +82,7 @@ ViewProviderOTCoordinateSystemObject::~ViewProviderOTCoordinateSystemObject()
 void ViewProviderOTCoordinateSystemObject::attach(App::DocumentObject *obj)
 {
     ViewProviderGeometryObject::attach(obj);
-    /* FIXME:From Interface ViewProviderDatum, do we need those?
-        SoShapeHints* hints = new SoShapeHints();
-        hints->shapeType.setValue(SoShapeHints::UNKNOWN_SHAPE_TYPE);
-        hints->vertexOrdering.setValue(SoShapeHints::COUNTERCLOCKWISE);
-        SoDrawStyle* fstyle = new SoDrawStyle();
-        fstyle->style = SoDrawStyle::FILLED;
-        fstyle->lineWidth = 3;
-        fstyle->pointSize = 5;
-        pPickStyle->style = SoPickStyle::SHAPE;
-        SoMaterialBinding* matBinding = new SoMaterialBinding;
-        matBinding->value = SoMaterialBinding::OVERALL;
-
-        SoSeparator* sep = new SoSeparator();
-        sep->addChild(hints);
-        sep->addChild(fstyle);
-        sep->addChild(pPickStyle);
-        sep->addChild(matBinding);
-        sep->addChild(pcShapeMaterial);
-        sep->addChild(pShapeSep);
-
-        addDisplayMaskMode(sep, "Base");
-    */
+    
     SoMaterial *material = new SoMaterial();
     material->diffuseColor.setNum(4);
     material->diffuseColor.set1Value(0, SbColor(0.f, 0.f, 0.f));
@@ -116,7 +99,8 @@ void ViewProviderOTCoordinateSystemObject::attach(App::DocumentObject *obj)
 
     coord->point.setNum(4);
 
-    ViewProviderDatum::setExtents(defaultBoundBox());
+    // FIXME: FC code use method from Datum
+    //  ViewProviderDatum::setExtents(defaultBoundBox());
 
     getShapeRoot()->addChild(coord);
 
@@ -193,9 +177,11 @@ void ViewProviderOTCoordinateSystemObject::setupLabels()
 
 void ViewProviderOTCoordinateSystemObject::updateData(const App::Property *prop)
 {
-    if (strcmp(prop->getName(), "Placement") == 0)
-        updateExtents();
+    //FIXME: belong to auto resize logic
+    // if (strcmp(prop->getName(), "Placement") == 0)
+    //     updateExtents();
 
+    // ViewProviderOTAttachableObject::updateData(prop);
     ViewProviderDatum::updateData(prop);
 }
 
@@ -208,11 +194,12 @@ void ViewProviderOTCoordinateSystemObject::onChanged(const App::Property *prop)
         else if (prop == &Zoom)
         {
             autoZoom->scaleFactor.setValue(Zoom.getValue());
-            updateExtents();
+            // updateExtents(); //FIXME: resize
         }
         else if (prop == &FontSize)
             font->size = FontSize.getValue();
     }
+    // ViewProviderOTAttachableObject::onChanged(prop);
     ViewProviderDatum::onChanged(prop);
 }
 

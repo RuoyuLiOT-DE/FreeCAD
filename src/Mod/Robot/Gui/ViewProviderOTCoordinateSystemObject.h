@@ -1,7 +1,9 @@
-#pragma once
+    #pragma once
 
-#include <Gui/ViewProviderGeometryObject.h>
 #include <Mod/Part/Gui/ViewProviderAttachExtension.h>
+
+// #include "ViewProviderOTAttachableObject.h"
+#include <Mod/PartDesign/Gui/ViewProviderDatum.h>
 
 // Forward declarations
 class SoCoordinate3;
@@ -14,7 +16,7 @@ namespace Gui
 
 namespace RobotGui
 {
-    class RobotGuiExport ViewProviderOTCoordinateSystemObject : public Gui::ViewProviderGeometryObject, PartGui::ViewProviderAttachExtension
+    class RobotGuiExport ViewProviderOTCoordinateSystemObject : public PartDesignGui::ViewProviderDatum //RobotGui::ViewProviderOTAttachableObject
     {
         PROPERTY_HEADER(RobotGui::ViewProviderOTCoordinateSystemObject);
 

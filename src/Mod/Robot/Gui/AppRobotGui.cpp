@@ -39,6 +39,8 @@
 #include "ViewProviderTrajectoryDressUp.h"
 #include "ViewProviderTrajectoryCompound.h"
 #include "ViewProviderAttachablePartObject.h"
+#include "ViewProviderOTAttachableObject.h"
+#include "ViewProviderOTCoordinateSystemObject.h"
 #include "Workbench.h"
 
 // use a different name to CreateCommand()
@@ -120,7 +122,9 @@ PyMOD_INIT_FUNC(RobotGui)
     RobotGui::ViewProviderTrajectoryCompound ::init();
     RobotGui::ViewProviderTrajectoryDressUp  ::init();
     RobotGui::ViewProviderAttachablePartObject ::init();
-
+    RobotGui::ViewProviderOTAttachableObject ::init();
+    RobotGui::ViewProviderOTCoordinateSystemObject ::init();
+    
      // add resources and reloads the translators
     loadRobotResource();
 

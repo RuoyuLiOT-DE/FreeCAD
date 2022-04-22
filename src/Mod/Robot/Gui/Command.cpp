@@ -43,10 +43,11 @@
 
 #include <Mod/Robot/App/AttachablePartObject.h> // To use ot-attachable object
 #include <Mod/PartDesign/App/DatumCS.h>         // To use the coordinate system defined in partdesgin module
-#include "TaskDlgOTAttacher.h"
 #include <Mod/Part/Gui/ViewProvider.h>
+#include <BRepBuilderAPI_MakeVertex.hxx> //For axis cross origin
 
-#include <BRepBuilderAPI_MakeVertex.hxx>
+#include "TaskDlgOTAttacher.h"
+#include <Mod/Robot/App/OTCoordinateSystemObject.h>
 
 using namespace std;
 using namespace RobotGui;
@@ -362,10 +363,10 @@ void CmdCreateCoordSys::activated(int)
         tshape.setPlacement(pWCS->Placement.getValue());
         pWCS->Shape.setValue(tshape);
     }
-    PartDesign::CoordinateSystem *pCordSys = 0;
+    Robot::OTCoordinateSystemObject *pCordSys = 0;
     std::string ObjName = getUniqueObjectName("Frame"); // If this is not the first object with this name it got a number 00x append at the end of this name
-    doCommand(Doc, "App.activeDocument().addObject(\"PartDesign::CoordinateSystem\",\"%s\")", ObjName.c_str());
-    pCordSys = static_cast<PartDesign::CoordinateSystem *>(App::GetApplication().getActiveDocument()->getObject(ObjName.c_str()));
+    doCommand(Doc, "App.activeDocument().addObject(\"Robot::OTCoordinateSystemObject\",\"%s\")", ObjName.c_str());
+    pCordSys = dynamic_cast<Robot::OTCoordinateSystemObject *>(App::GetApplication().getActiveDocument()->getObject(ObjName.c_str()));
     if (!pCordSys || !pObj)
     {
         Base::RuntimeError("Coordinate system created failed or world base not exist");

@@ -32,7 +32,7 @@
 # define PartExport     __declspec(dllimport)
 # define PartGuiExport  __declspec(dllimport)
 # define PartDesignExport __declspec(dllimport)
-// # define PartDesignGuiExport __declspec(dllimport)
+# define PartDesignGuiExport __declspec(dllimport)
 # define RobotGuiExport    __declspec(dllexport)
 #else // for Linux
 # define PartExport

@@ -46,6 +46,7 @@
 #include "TrajectoryCompound.h"
 #include "TrajectoryDressUpObject.h"
 #include "AttachablePartObject.h"
+#include "OTCoordinateSystemObject.h"
 
 namespace Robot {
 class Module : public Py::ExtensionModule<Module>
@@ -130,6 +131,8 @@ PyMOD_INIT_FUNC(Robot)
     Robot::TrajectoryCompound      ::init();
     Robot::TrajectoryDressUpObject ::init();
     Robot::AttachablePartObject    ::init();
+    Robot::OTAttachableObject      ::init();
+    Robot::OTCoordinateSystemObject ::init();
 
     PyMOD_Return(robotModule);
 }
